@@ -32,15 +32,15 @@ To create a Whisper, the client generates data:
 2. Generate a random creator key, that will be stored in Convex, to identify the creator -- allowing them to view accesses or delete the whisper.
 3. Generate a random password, or use password typed by the creator. This password will be sent to the recipient but only its hash will be stored in Convex.
 4. Encrypt the Whisper secret with the password.
-5. Send name, creator key, password hash, and encrypted secret to Convex's createWhisper mutation.
+5. Send name, creator key, password hash, and encrypted secret to Convex's `createWhisper` mutation.
 
 For the recipient to access a Whisper:
 
 1. URL contains the whisper name.
 2. Generate a random access key, that will be stored in Convex, to identify the access (note we can't both read the whisper and record the access because mutations can't return anything).
 3. Get the password, either from the URL or entered separately.
-4. Send the name, access key, and hash of password to Convex's accessWhisper mutation.
-5. Receive the encrypted secret from Convex's readSecret query, by passing up the name and access key.
+4. Send the name, access key, and hash of password to Convex's `accessWhisper` mutation.
+5. Receive the encrypted secret from Convex's `readSecret` query, by passing up the name and access key.
 6. Decrypt the secret with the password.
 
 ### Why is this secure?
@@ -53,3 +53,12 @@ They can send through any means, including speech.
 
 If it is sent through an insecure channel and accessed by an eavesdropper, the creator can see the access,
 and the recipient may notice that the secret has pre-emptively expired.
+
+# TODO
+
+- Show accesses
+- Expire after access count
+- Expire after time
+- Expire manually
+- Make text boxes bigger and nicer
+- Custom password
