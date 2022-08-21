@@ -11,6 +11,7 @@
 
 import type accessWhisper from "../accessWhisper";
 import type createWhisper from "../createWhisper";
+import type expireNow from "../expireNow";
 import type readAccessLog from "../readAccessLog";
 import type readExpiration from "../readExpiration";
 import type readSecret from "../readSecret";
@@ -35,6 +36,7 @@ export type ConvexAPI = {
   mutations: {
     accessWhisper: ClientMutation<typeof accessWhisper>;
     createWhisper: ClientMutation<typeof createWhisper>;
+    expireNow: ClientMutation<typeof expireNow>;
   };
 };
 

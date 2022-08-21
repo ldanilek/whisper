@@ -9,18 +9,29 @@ export const expirationOptions = [
     'never',
 ];
 
-function optionToExpiration(option: string): [number | null, number | null] | null {
+export const directExpirationOption = 'manually expired';
+
+type Expiration = {
+  never?: boolean,
+  manual?: boolean,
+  afterDuration?: number,
+  afterAccessCount?: number,
+}
+
+function optionToExpiration(option: string): Expiration {
   switch (option) {
     case 'after one access':
-      return [1, null];
+      return {afterAccessCount: 1};
     case 'after ten accesses':
-      return [10, null];
+      return {afterAccessCount: 10};
     case 'after five minutes':
-      return [null, 5 * 60 * 1000];
+      return {afterDuration: 5 * 60 * 1000};
     case 'after one week':
-      return [null, 7 * 24 * 60 * 60 * 1000];
+      return {afterDuration: 7 * 24 * 60 * 60 * 1000};
     case 'never':
-      return null;
+      return {never: true};
+    case directExpirationOption:
+      return {manual: true};
     default:
       throw Error(`unrecognized expiration '${option}'`);
   }
@@ -48,20 +59,21 @@ export async function getValidWhisper(
       .unique();
   const creation = whisperDoc._creationTime;
   const expiration = optionToExpiration(whisperDoc.expiration);
-  if (expiration === null) {
+  if (expiration.never) {
     return whisperDoc;
-  }
-  const [expirationCount, expirationDuration] = expiration;
-  if (expirationCount !== null) {
-    if (newAccess && await countAccesses(db, name) >= expirationCount) {
-      throw Error(`already accessed ${expirationCount} time${expirationCount === 1 ? '' : 's'}`);
+  } else if (expiration.manual) {
+    throw Error(`manually expired`);
+  } else if (expiration.afterAccessCount) {
+    if (newAccess && await countAccesses(db, name) >= expiration.afterAccessCount) {
+      throw Error(`already accessed ${expiration.afterAccessCount} time${expiration.afterAccessCount === 1 ? '' : 's'}`);
     }
-  }
-  if (expirationDuration !== null) {
-      const after = creation + expirationDuration;
+  } else if (expiration.afterDuration) {
+      const after = creation + expiration.afterDuration;
       if (after < new Date().getTime()) {
-        throw Error(`expired after ${printDuration(expirationDuration)}`);
+        throw Error(`expired after ${printDuration(expiration.afterDuration)}`);
       }
+  } else {
+    throw Error('developer error');
   }
   return whisperDoc;
 }
@@ -111,21 +123,20 @@ export async function readExpiration(
       .unique();
   const creation = whisperDoc._creationTime;
   const expiration = optionToExpiration(whisperDoc.expiration);
-  if (expiration === null) {
+  if (expiration.never) {
     return ['will never expire', null];
-  }
-  const [expirationCount, expirationDuration] = expiration;
-  if (expirationCount !== null) {
+  } else if (expiration.manual) {
+    return ['manually expired', null];
+  } else if (expiration.afterAccessCount) {
     const accesses = await countAccesses(db, name);
-    if (accesses >= expirationCount) {
+    if (accesses >= expiration.afterAccessCount) {
       return [`expired after ${accesses} access${accesses === 1 ? '' : 'es'}`, null];
     } else {
-      const remaining = expirationCount-accesses;
+      const remaining = expiration.afterAccessCount-accesses;
       return [`will expire after ${remaining} more access${remaining === 1 ? '' : 'es'}`, null];
     }
-  }
-  if (expirationDuration !== null) {
-    const after = creation + expirationDuration;
+  } else if (expiration.afterDuration) {
+    const after = creation + expiration.afterDuration;
     const currentTime = (new Date()).getTime();
     if (after < currentTime) {
       return [`expired ${printDuration(currentTime - after)} ago`, currentTime + 1000];
