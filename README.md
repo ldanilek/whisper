@@ -56,8 +56,8 @@ and the recipient may notice that the secret has pre-emptively expired.
 
 # TODO
 
-- Expire manually
 - Custom password
+- Expire manually
 - Deploy to Vercel
 - Display as plaintext
 - Download as txt file

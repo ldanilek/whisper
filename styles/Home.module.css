@@ -93,6 +93,10 @@
   flex-grow: 1;
 }
 
+.footerLink {
+  text-decoration: underline;
+}
+
 .title a {
   color: #0070f3;
   text-decoration: none;

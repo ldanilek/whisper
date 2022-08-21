@@ -28,6 +28,7 @@ const Whisper = ({children}: {children: any}) => {
       </main>
 
       <footer className={styles.footer}>
+        <div>
         <a
           href="https://www.convex.dev/"
           target="_blank"
@@ -38,6 +39,10 @@ const Whisper = ({children}: {children: any}) => {
             <Image src="/convex.svg" alt="Convex Logo" width={90} height={18} />
           </span>
         </a>
+        <a href="https://github.com/ldanilek/whisper/blob/main/README.md">
+          Open sourced&nbsp;<span className={styles.footerLink}>on Github</span>
+        </a>
+        </div>
       </footer>
     </div>
   )

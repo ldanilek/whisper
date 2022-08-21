@@ -61,7 +61,7 @@ const AccessPage: NextPage = ({ip}: any) => {
 
   return (
     <Whisper>
-        Someone whispered this secret to you
+        <div>Someone whispered this secret to you</div>
         {
           name && accessKey && password ?
           <SecretDisplay name={name} accessKey={accessKey} password={password} /> :
