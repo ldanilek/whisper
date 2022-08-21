@@ -26,7 +26,9 @@ export async function createWhisper(
 }
 
 export function makeURL(name: string, password: string): string {
-  return `http://localhost:3000/access?name=${name}&password=${password}`;
+  const currentURL = window.location;
+  const baseURL = currentURL.protocol + "//" + currentURL.host;
+  return `${baseURL}/access?name=${name}&password=${password}`;
 }
 
 export async function accessWhisper(
