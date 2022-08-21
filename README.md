@@ -56,7 +56,6 @@ and the recipient may notice that the secret has pre-emptively expired.
 
 # TODO
 
-- Custom password
 - Expire manually
 - Display error if whisper expired
 - Display when it will expire (accesses or time remaining)
