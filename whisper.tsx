@@ -21,6 +21,7 @@ const Whisper = ({children}: {children: any}) => {
       <div className={styles.title}>
         Whisper
       </div>
+      <div className={styles.subtitle}>frictionless end-to-end encrypted secret sharing</div>
       </div>
       <main className={styles.main}>
         {children}
