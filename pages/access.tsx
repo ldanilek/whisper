@@ -39,14 +39,15 @@ const AccessPage: NextPage = ({ip}: any) => {
   const [name, setName] = useState<string | undefined>(undefined);
   const [password, setPassword] = useState<string | undefined>(undefined);
   const accessWhisperMutation = useMutation('accessWhisper');
+  const [inputPassword, setInputPassword] = useState<string>('');
   useEffect(() => {
+    let password = router.query['password'] as string;
+    setPassword(password);
     let name = router.query['name'] as string;
     setName(name);
     if (name === undefined) {
       return;
     }
-    let password = router.query['password'] as string;
-    setPassword(password);
     let accessKey = router.query["accessKey"] as string;
     setAccessKey(accessKey);
     if (password && !accessKey) {
@@ -55,20 +56,35 @@ const AccessPage: NextPage = ({ip}: any) => {
           router.push(`/access?name=${name}&accessKey=${accessKey}&password=${password}`);
         })
       });
-      return;
     }
   }, [router]);
 
+  if (name && !password) {
+    return (
+      <Whisper>
+        <div>Password <input type='text' value={inputPassword} onChange={(e) => setInputPassword(e.target.value)} />
+        </div>
+        <button className={styles.button} onClick={() =>
+          router.push(`/access?name=${name}&password=${inputPassword}`)
+        }>Access Secret</button>
+      </Whisper>
+    );
+  }
+
+  if (!(name && accessKey && password)) {
+    return (
+      <Whisper>
+        <div className={styles.description}>Loading...</div>
+      </Whisper>
+    );
+  }
+
   return (
     <Whisper>
-        <div>Someone whispered this secret to you</div>
-        {
-          name && accessKey && password ?
-          <SecretDisplay name={name} accessKey={accessKey} password={password} /> :
-          <div>Loading...</div>
-        }
+      Someone whispered this secret to you
+      <SecretDisplay name={name} accessKey={accessKey} password={password} />
     </Whisper>
-  )
+  );
 }
 
 export const getServerSideProps: GetServerSideProps = async ({req}) => {

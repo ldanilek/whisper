@@ -10,11 +10,14 @@ export type CreateResponse = {
 export async function createWhisper(
     secret: string,
     expiration: string,
+    password: string,
     mutation: (name: string, encryptedSecret: string, passwordHash: string, creatorKey: string, expiration: string) => Promise<null>,
 ): Promise<CreateResponse> {
     const name = uuid.v4();
     const creatorKey = uuid.v4();
-    const password = uuid.v4();
+    if (password.length === 0) {
+      password = uuid.v4();
+    }
     const encryptedSecret = CryptoJS.AES.encrypt(secret, password).toString();
     const passwordHash = CryptoJS.SHA256(password).toString();
     await mutation(name, encryptedSecret, passwordHash, creatorKey, expiration);
@@ -25,9 +28,12 @@ export async function createWhisper(
     };
 }
 
-export function makeURL(name: string, password: string): string {
+export function makeURL(name: string, password: string | null): string {
   const currentURL = window.location;
   const baseURL = currentURL.protocol + "//" + currentURL.host;
+  if (password === null) {
+    return `${baseURL}/access?name=${name}`;
+  }
   return `${baseURL}/access?name=${name}&password=${password}`;
 }
 

@@ -29,6 +29,17 @@
   background-color: white;
 }
 
+.copiable {
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+  text-align: center;
+  line-height: 1.5;
+  font-size: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .shareURL {
   font-size: 0.8rem;
   border: 1px solid black;
@@ -36,9 +47,9 @@
   display: block;
   box-sizing: inherit;
   padding: 1em 16px;
-  margin-top: 1.2em;
   background-color: white;
   color: navy;
+  min-width: 200px;
 }
 
 .button {
@@ -136,12 +147,19 @@
 
 .description {
   text-align: center;
-}
-
-.description {
   margin: 2rem 0;
   line-height: 1.5;
   font-size: 1.5rem;
+}
+
+.passwordInput {
+  width: 13rem;
+}
+
+.sharePair {
+  display: flex;
+  flex: row;
+  justify-content:space-around;
 }
 
 .logo {

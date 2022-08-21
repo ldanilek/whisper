@@ -26,6 +26,20 @@ const AccessLog = ({whisperName, creatorKey}: {whisperName: string, creatorKey: 
   </div>);
 };
 
+const Copiable = ({text}: {text: string}) => {
+  const copy = () => {
+    navigator.clipboard.writeText(text);
+  };
+  return (
+    <div className={styles.copiable}>
+    <div className={styles.shareURL}>{text}</div>
+    <button className={styles.button} onClick={copy}>
+      Copy to Clipboard
+    </button>
+    </div>
+  );
+}
+
 const Created: NextPage = () => {
   const router = useRouter();
   const [name, setName] = useState<string | undefined>(undefined);
@@ -38,27 +52,20 @@ const Created: NextPage = () => {
     setName(name);
     setCreatorKey(creatorKey);
     setPassword(password);
-    if (name === undefined || creatorKey === undefined || password === undefined) {
-      return;
-    }
   }, [router]);
-  const copy = () => {
-    if (name === undefined || password === undefined) {
-      return;
-    }
-    navigator.clipboard.writeText(makeURL(name, password));
-  };
 
   return (
     <Whisper>
         {
           (name && password && creatorKey) ? (
             <div className={styles.description}>
-              Share this URL
-            <div className={styles.shareURL}>{makeURL(name, password)}</div>
-            <button className={styles.button} onClick={copy}>
-              Copy to Clipboard
-            </button>
+              Share this Private URL
+              <Copiable text={makeURL(name, password)} />
+            Or Share this Public URL and the password
+            <div className={styles.sharePair}>
+              <Copiable text={makeURL(name, null)} />
+              <Copiable text={password} />
+            </div>
             <AccessLog whisperName={name} creatorKey={creatorKey} />
             </div>
           ) : null

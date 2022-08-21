@@ -4,7 +4,6 @@ import Image from 'next/image'
 import styles from './styles/Home.module.css'
 import { useQuery, useMutation } from './convex/_generated/react'
 import { useCallback, useState, useEffect } from 'react'
-import { CreateResponse, createWhisper, makeURL } from './common'
 import { expirationOptions } from './expiration'
 import { useRouter } from 'next/router'
 
