@@ -40,6 +40,7 @@ const AccessPage: NextPage = ({ip}: any) => {
   const [password, setPassword] = useState<string | undefined>(undefined);
   const accessWhisperMutation = useMutation('accessWhisper');
   const [inputPassword, setInputPassword] = useState<string>('');
+  
   useEffect(() => {
     let password = router.query['password'] as string;
     setPassword(password);
