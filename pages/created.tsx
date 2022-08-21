@@ -15,7 +15,7 @@ const AccessLog = ({whisperName, creatorKey}: {whisperName: string, creatorKey: 
     return null;
   }
   return (<div className={styles.accessLog}>
-    <p>{accessDocs.length} Accesses</p>
+    <p>{accessDocs.length} {accessDocs.length === 1 ? "Access" : "Accesses"}</p>
     {accessDocs.map((accessDoc) =>
       <div key={accessDoc._id.toString()} className={styles.accessLogEntry}>
         {(new Date(accessDoc._creationTime)).toString()}
