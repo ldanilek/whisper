@@ -1,6 +1,6 @@
 import { query } from './_generated/server'
 import { getValidWhisper } from '../expiration';
-import { Document } from '../convex/_generated/dataModel';
+import { Document } from './_generated/dataModel';
 
 export default query(async ({ db }, name: string, creatorKey: string): Promise<Document<'accesses'>[]> => {
   const whisperDoc = await db
@@ -8,7 +8,7 @@ export default query(async ({ db }, name: string, creatorKey: string): Promise<D
     .index('by_name').range((q) => q.eq('name', name))
     .unique();
   if (whisperDoc.creatorKey !== creatorKey) {
-    throw Error()
+    throw Error('invalid creator key');
   }
   const accessDocs = await db
     .table('accesses')

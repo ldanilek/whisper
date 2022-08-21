@@ -12,6 +12,7 @@
 import type accessWhisper from "../accessWhisper";
 import type createWhisper from "../createWhisper";
 import type readAccessLog from "../readAccessLog";
+import type readExpiration from "../readExpiration";
 import type readSecret from "../readSecret";
 import type { OptimisticLocalStore as GenericOptimisticLocalStore } from "convex/browser";
 import type { ClientMutation, ClientQuery } from "convex/server";
@@ -28,6 +29,7 @@ import type { ClientMutation, ClientQuery } from "convex/server";
 export type ConvexAPI = {
   queries: {
     readAccessLog: ClientQuery<typeof readAccessLog>;
+    readExpiration: ClientQuery<typeof readExpiration>;
     readSecret: ClientQuery<typeof readSecret>;
   };
   mutations: {

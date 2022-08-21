@@ -11,11 +11,26 @@ import Whisper from '../whisper'
 
 const AccessLog = ({whisperName, creatorKey}: {whisperName: string, creatorKey: string}) => {
   const accessDocs = useQuery('readAccessLog', whisperName, creatorKey);
+  const [currentTime, setCurrentTime] = useState((new Date()).getTime());
+  const expiration = useQuery('readExpiration', whisperName, creatorKey, currentTime);
+  const [expirationText, setExpirationText] = useState<string>('');
+  useEffect(() => {
+    if (expiration === undefined) {
+      return;
+    }
+    const [expirationText, nextTime] = expiration;
+    setExpirationText(expirationText);
+    if (nextTime) {
+      setTimeout(() => {
+        setCurrentTime((new Date()).getTime());
+      }, nextTime - (new Date()).getTime());
+    }
+  }, [expiration]);
   if (accessDocs === undefined) {
     return null;
   }
   return (<div className={styles.accessLog}>
-    <p>{accessDocs.length} {accessDocs.length === 1 ? "Access" : "Accesses"}</p>
+    <p>{accessDocs.length} {accessDocs.length === 1 ? "access" : "accesses"}; {expirationText ?? ''}</p>
     {accessDocs.map((accessDoc) =>
       <div key={accessDoc._id.toString()} className={styles.accessLogEntry}>
         {(new Date(accessDoc._creationTime)).toString()}

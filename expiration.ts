@@ -5,8 +5,26 @@ export const expirationOptions = [
     'after one access',
     'after ten accesses',
     'after five minutes',
+    'after one week',
     'never',
 ];
+
+function optionToExpiration(option: string): [number | null, number | null] | null {
+  switch (option) {
+    case 'after one access':
+      return [1, null];
+    case 'after ten accesses':
+      return [10, null];
+    case 'after five minutes':
+      return [null, 5 * 60 * 1000];
+    case 'after one week':
+      return [null, 7 * 24 * 60 * 60 * 1000];
+    case 'never':
+      return null;
+    default:
+      throw Error(`unrecognized expiration '${option}'`);
+  }
+}
 
 export async function countAccesses(
   db: DatabaseReader,
@@ -28,28 +46,92 @@ export async function getValidWhisper(
       .table('whispers')
       .index('by_name').range((q) => q.eq('name', name))
       .unique();
-  const creation = new Date(whisperDoc._creationTime);
-  switch (whisperDoc.expiration) {
-    case 'after one access':
-      if (newAccess && await countAccesses(db, name) >= 1) {
-        throw Error('already accessed');
+  const creation = whisperDoc._creationTime;
+  const expiration = optionToExpiration(whisperDoc.expiration);
+  if (expiration === null) {
+    return whisperDoc;
+  }
+  const [expirationCount, expirationDuration] = expiration;
+  if (expirationCount !== null) {
+    if (newAccess && await countAccesses(db, name) >= expirationCount) {
+      throw Error(`already accessed ${expirationCount} time${expirationCount === 1 ? '' : 's'}`);
+    }
+  }
+  if (expirationDuration !== null) {
+      const after = creation + expirationDuration;
+      if (after < new Date().getTime()) {
+        throw Error(`expired after ${printDuration(expirationDuration)}`);
       }
-      break;
-    case 'after ten accesses':
-      if (newAccess && await countAccesses(db, name) >= 10) {
-        throw Error('already accessed ten times');
-      }
-      break;
-    case 'after five minutes':
-      const fiveAfter = new Date(creation.getTime() + 5 * 60 * 1000);
-      if (fiveAfter < new Date()) {
-        throw Error('expired after five minutes');
-      }
-      break;
-    case 'never':
-      break;
-    default:
-      throw Error(`unrecognized expiration ${whisperDoc.expiration}`);
   }
   return whisperDoc;
+}
+
+function splitBase(
+  n: number,
+  biggest: string,
+  bases: [number, string][],
+): [number, string][] {
+  let inBase: [number, string][] = [];
+  for (let i = bases.length - 1; i >= 0; i--) {
+    const base = bases[i][0];
+    const baseName = bases[i][1];
+    const count = Math.floor(n / base);
+    const remainder = n % base;
+    inBase = [[remainder, baseName], ...inBase];
+    n = count;
+  }
+  inBase = [[n, biggest], ...inBase];
+  return inBase;
+}
+
+function printDuration(duration: number): string {
+  let inBase = splitBase(duration, 'day', [[24, 'hour'], [60, 'minute'], [60, 'second'], [1000, 'millisecond']]);
+  let asStrings = inBase.map(([count, name]) => {
+    if (count === 0 || name === 'millisecond') {
+      return '';
+    }
+    if (count === 1) {
+      return `1 ${name}`;
+    }
+    return `${count} ${name}s`;
+  }).filter((s) => s.length > 0);
+  if (asStrings.length === 0) {
+    return '0 seconds';
+  }
+  return asStrings.join(', ');
+}
+
+export async function readExpiration(
+    db: DatabaseReader,
+    name: string,
+): Promise<[string, number | null]> {
+  const whisperDoc = await db
+      .table('whispers')
+      .index('by_name').range((q) => q.eq('name', name))
+      .unique();
+  const creation = whisperDoc._creationTime;
+  const expiration = optionToExpiration(whisperDoc.expiration);
+  if (expiration === null) {
+    return ['will never expire', null];
+  }
+  const [expirationCount, expirationDuration] = expiration;
+  if (expirationCount !== null) {
+    const accesses = await countAccesses(db, name);
+    if (accesses >= expirationCount) {
+      return [`expired after ${accesses} access${accesses === 1 ? '' : 'es'}`, null];
+    } else {
+      const remaining = expirationCount-accesses;
+      return [`will expire after ${remaining} more access${remaining === 1 ? '' : 'es'}`, null];
+    }
+  }
+  if (expirationDuration !== null) {
+    const after = creation + expirationDuration;
+    const currentTime = (new Date()).getTime();
+    if (after < currentTime) {
+      return [`expired ${printDuration(currentTime - after)} ago`, currentTime + 1000];
+    } else {
+      return [`will expire in ${printDuration(after - currentTime)}`, currentTime + 1000];
+    }
+  }
+  throw Error('developer error');
 }

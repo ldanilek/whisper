@@ -58,6 +58,5 @@ and the recipient may notice that the secret has pre-emptively expired.
 
 - Expire manually
 - Display error if whisper expired
-- Display when it will expire (accesses or time remaining)
 - Display secret as plaintext for easy copying
 - Download secret as txt file
