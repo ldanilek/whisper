@@ -58,6 +58,6 @@ and the recipient may notice that the secret has pre-emptively expired.
 
 - Custom password
 - Expire manually
-- Deploy to Vercel
-- Display as plaintext
-- Download as txt file
+- Display when it will expire (accesses or time remaining)
+- Display secret as plaintext for easy copying
+- Download secret as txt file
