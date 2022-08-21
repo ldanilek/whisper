@@ -3,67 +3,36 @@ import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 import { useQuery, useMutation } from '../convex/_generated/react'
-import { useCallback, useState } from 'react'
-import { createWhisper } from '../common'
+import { useCallback, useEffect, useState } from 'react'
+import { CreateResponse, createWhisper } from '../common'
+import { expirationOptions } from '../expiration'
 import { useRouter } from 'next/router'
+import Whisper from '../whisper'
 
 const Home: NextPage = () => {
   const createWhisperMutation = useMutation('createWhisper');
   const [secret, setSecret] = useState('');
-  const [url, setUrl] = useState('');
+  const [expiration, setExpiration] = useState(expirationOptions[0]);
   const router = useRouter();
   const create = async () => {
-    const url = await createWhisper(secret, createWhisperMutation);
-    setUrl(url);
-  }
-  const copy = () => {
-    navigator.clipboard.writeText(url);
+    const createResponse = await createWhisper(secret, expiration, createWhisperMutation);
+    router.push(`/created?name=${createResponse.name}&creatorKey=${createResponse.creatorKey}&password=${createResponse.password}`);
   };
 
   return (
-    <div className={styles.container}>
-      <Head>
-        <title>Whisper</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
-      <div className={styles.header}>
-      <div className={styles.title}>
-        Whisper
-      </div>
-      </div>
-      <main className={styles.main}>
+    <Whisper>
         <textarea className={styles.secretDisplay} placeholder='secret' value={secret} onChange={(e) => setSecret(e.target.value)} />
+        <div><span>expires&nbsp;</span>
+        <select value={expiration} onChange={(e) => setExpiration(e.target.value)}>
+          {
+            expirationOptions.map((o) => <option value={o} key={o}>{o}</option>)
+          }
+        </select>
+        </div>
         <button className={styles.button} onClick={create}>
           Create Whisper
         </button>
-        {
-          url ? (
-            <div className={styles.description}>
-              Share this URL
-            <div className={styles.shareURL}>{url}</div>
-            <button className={styles.button} onClick={copy}>
-              Copy to Clipboard
-            </button>
-            </div>
-          ) : null
-        }
-        
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://www.convex.dev/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <span className={styles.logo}>
-            <Image src="/convex.svg" alt="Convex Logo" width={90} height={18} />
-          </span>
-        </a>
-      </footer>
-    </div>
+    </Whisper>
   )
 }
 

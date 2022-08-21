@@ -56,12 +56,8 @@ and the recipient may notice that the secret has pre-emptively expired.
 
 # TODO
 
-- Expire after access count
-- Expire after time
 - Expire manually
-- Show accesses
 - Custom password
 - Deploy to Vercel
-- Button to copy to clipboard
 - Display as plaintext
 - Download as txt file
