@@ -10,7 +10,7 @@ export type CreateResponse = {
 export async function createWhisper(
     secret: string,
     expiration: string,
-    mutation: (name: string, secret: string, passwordHash: string, creatorKey: string, expiration: string) => Promise<null>,
+    mutation: (name: string, encryptedSecret: string, passwordHash: string, creatorKey: string, expiration: string) => Promise<null>,
 ): Promise<CreateResponse> {
     const name = uuid.v4();
     const creatorKey = uuid.v4();

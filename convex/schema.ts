@@ -4,7 +4,7 @@ export default defineSchema({
   whispers: defineTable({
     name: s.string(),
     // Encrypted with password.
-    secret: s.string(),
+    encryptedSecret: s.string(),
     // So recipient can prove to server (in accessWhisper) that they are allowed
     // to read the secret.
     passwordHash: s.string(),
