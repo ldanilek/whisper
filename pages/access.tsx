@@ -65,7 +65,7 @@ const AccessPage: NextPage = ({ip}: any) => {
         {
           name && accessKey && password ?
           <SecretDisplay name={name} accessKey={accessKey} password={password} /> :
-          <div>"Loading..."</div>
+          <div>Loading...</div>
         }
     </Whisper>
   )
