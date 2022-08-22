@@ -56,6 +56,5 @@ and the recipient may notice that the secret has pre-emptively expired.
 
 # TODO
 
-- Display error if whisper expired
 - Display secret as plaintext for easy copying
 - Download secret as txt file
