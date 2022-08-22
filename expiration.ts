@@ -3,6 +3,7 @@ import { DatabaseReader } from "./convex/_generated/server";
 
 export const expirationOptions = [
     'after one access',
+    //'after 20 seconds', // for testing
     'after ten accesses',
     'after five minutes',
     'after one week',
@@ -24,6 +25,8 @@ function optionToExpiration(option: string): Expiration {
       return {afterAccessCount: 1};
     case 'after ten accesses':
       return {afterAccessCount: 10};
+    case 'after 20 seconds':
+      return {afterDuration: 20 * 1000};
     case 'after five minutes':
       return {afterDuration: 5 * 60 * 1000};
     case 'after one week':

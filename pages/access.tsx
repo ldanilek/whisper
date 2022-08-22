@@ -4,9 +4,10 @@ import Image from 'next/image'
 import styles from '../styles/Home.module.css'
 import { useQuery, useMutation } from '../convex/_generated/react'
 import { useCallback, useState, useEffect } from 'react'
-import { accessWhisper, readWhisper } from '../common'
+import { accessWhisper, hashPassword, readWhisper } from '../common'
 import { useRouter } from 'next/router'
 import Whisper from '../whisper'
+import React from 'react'
 
 
 const SecretDisplay = ({name, accessKey, password}: {name: string, accessKey: string, password: string}) => {
@@ -32,6 +33,66 @@ const getGeolocation = async () => {
   });
 };
 
+const ExpirationDisplay = ({whisperName, passwordHash}: {whisperName: string, passwordHash: string}) => {
+  const [currentTime, setCurrentTime] = useState(new Date().getTime());
+  const expiration = useQuery('readExpirationError', whisperName, passwordHash, currentTime);
+  const [expirationText, setExpirationText] = useState<string | null>(null);
+  useEffect(() => {
+    if (expiration === undefined) {
+      return;
+    }
+    const [newExpirationText, refresh] = expiration;
+    if (refresh) {
+      setTimeout(() => {
+        setCurrentTime(new Date().getTime());
+      }, refresh - new Date().getTime());
+    }
+    if (newExpirationText) {
+      setExpirationText(newExpirationText);
+    }
+  }, [expiration]);
+  if (!expirationText) {
+    return <div className={styles.description}>Loading...</div>;
+  }
+  return (
+    <div className={styles.description}>{expirationText}</div>
+  );
+};
+
+type ExpirationWrapperProps = {
+  whisperName: string,
+  passwordHash: string,
+  inputError: string;
+  children?: any;
+};
+
+type ExpirationWrapperState = {
+  caughtError: string;
+};
+
+class ExpirationWrapper extends React.Component<ExpirationWrapperProps, ExpirationWrapperState> {
+  constructor(props: ExpirationWrapperProps) {
+    super(props);
+    this.state = {caughtError: ''};
+  }
+  render() {
+    if (this.props.inputError || this.state.caughtError) {
+      return (
+        <Whisper>
+          <ExpirationDisplay whisperName={this.props.whisperName} passwordHash={this.props.passwordHash} />
+        </Whisper>
+      );
+    }
+    return <Whisper>{this.props.children}</Whisper>
+  }
+
+  // This is why it needs to be a class component.
+  static getDerivedStateFromError(error: any) {
+    console.log('getDerivedStateFromError');
+    return {caughtError: error.toString()};
+  }
+}
+
 
 const AccessPage: NextPage = ({ip}: any) => {
   const router = useRouter();
@@ -40,7 +101,7 @@ const AccessPage: NextPage = ({ip}: any) => {
   const [password, setPassword] = useState<string | undefined>(undefined);
   const accessWhisperMutation = useMutation('accessWhisper');
   const [inputPassword, setInputPassword] = useState<string>('');
-  
+  const [error, setError] = useState<string>('');
   useEffect(() => {
     let password = router.query['password'] as string;
     setPassword(password);
@@ -55,10 +116,16 @@ const AccessPage: NextPage = ({ip}: any) => {
       getGeolocation().then((position) => {
         accessWhisper(name, password, position as string | null, ip as string | null, accessWhisperMutation).then((accessKey) => {
           router.push(`/access?name=${name}&accessKey=${accessKey}&password=${password}`);
+        }, (err) => {
+          setError(err.toString());
         })
       });
     }
   }, [router]);
+
+  if (error) {
+    return <ExpirationWrapper inputError={error} whisperName={name ?? ''} passwordHash={hashPassword(password ?? '')}></ExpirationWrapper>;
+  }
 
   if (name && !password) {
     return (
@@ -81,10 +148,10 @@ const AccessPage: NextPage = ({ip}: any) => {
   }
 
   return (
-    <Whisper>
+    <ExpirationWrapper inputError={error} whisperName={name} passwordHash={hashPassword(password)}>
       Someone whispered this secret to you
       <SecretDisplay name={name} accessKey={accessKey} password={password} />
-    </Whisper>
+    </ExpirationWrapper>
   );
 }
 

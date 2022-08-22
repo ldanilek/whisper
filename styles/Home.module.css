@@ -16,7 +16,7 @@
 
 .secretDisplay {
   width: 95%;
-  height: 8rem;
+  min-height: 8rem;
   margin-top: 0rem;
 }
 

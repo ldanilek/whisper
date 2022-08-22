@@ -19,13 +19,17 @@ export async function createWhisper(
       password = uuid.v4();
     }
     const encryptedSecret = CryptoJS.AES.encrypt(secret, password).toString();
-    const passwordHash = CryptoJS.SHA256(password).toString();
+    const passwordHash = hashPassword(password);
     await mutation(name, encryptedSecret, passwordHash, creatorKey, expiration);
     return {
       password,
       name,
       creatorKey,
     };
+}
+
+export function hashPassword(password: string): string {
+  return CryptoJS.SHA256(password).toString();
 }
 
 export function makeURL(name: string, password: string | null): string {
@@ -45,7 +49,7 @@ export async function accessWhisper(
     mutation: (name: string, passwordHash: string, accessKey: string, geolocation: string | null, ip: string | null) => Promise<null>,
 ): Promise<string> {
     const accessKey = uuid.v4();
-    const passwordHash = CryptoJS.SHA256(password).toString();
+    const passwordHash = hashPassword(password);
     await mutation(name, passwordHash, accessKey, geolocation, ip);
     return accessKey;
 }
