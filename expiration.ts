@@ -45,8 +45,8 @@ export async function countAccesses(
   name: string,
 ): Promise<number> {
   const allAccesses = await db
-    .table('accesses')
-    .index('by_name_and_key').range(q => q.eq('name', name))
+    .query('accesses')
+    .withIndex('by_name_and_key', q => q.eq('name', name))
     .collect();
   return allAccesses.length;
 }
@@ -57,13 +57,13 @@ export async function getValidWhisper(
   newAccess: boolean,
 ): Promise<Document<'whispers'>> {
   const whisperDoc = await db
-      .table('whispers')
-      .index('by_name').range((q) => q.eq('name', name))
+      .query('whispers')
+      .withIndex('by_name', (q) => q.eq('name', name))
       .unique();
-  const creation = whisperDoc._creationTime;
-  const expiration = optionToExpiration(whisperDoc.expiration);
+  const creation = whisperDoc!._creationTime;
+  const expiration = optionToExpiration(whisperDoc!.expiration);
   if (expiration.never) {
-    return whisperDoc;
+    return whisperDoc!;
   } else if (expiration.manual) {
     throw Error(`manually expired`);
   } else if (expiration.afterAccessCount) {
@@ -78,7 +78,7 @@ export async function getValidWhisper(
   } else {
     throw Error('developer error');
   }
-  return whisperDoc;
+  return whisperDoc!;
 }
 
 function splitBase(
@@ -121,11 +121,11 @@ export async function readExpiration(
     name: string,
 ): Promise<[string, number | null]> {
   const whisperDoc = await db
-      .table('whispers')
-      .index('by_name').range((q) => q.eq('name', name))
+      .query('whispers')
+      .withIndex('by_name', (q) => q.eq('name', name))
       .unique();
-  const creation = whisperDoc._creationTime;
-  const expiration = optionToExpiration(whisperDoc.expiration);
+  const creation = whisperDoc!._creationTime;
+  const expiration = optionToExpiration(whisperDoc!.expiration);
   if (expiration.never) {
     return ['will never expire', null];
   } else if (expiration.manual) {
