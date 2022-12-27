@@ -20,5 +20,5 @@ export default defineSchema({
     ip: s.union(s.string(), s.null()),
   })
   .index('by_name_and_key', ['name', 'accessKey'])
-  .index('by_name_and_creation', ['name', '_creationTime']),
+  .index('by_name_and_creation', ['name']),
 });

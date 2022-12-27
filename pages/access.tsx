@@ -75,6 +75,7 @@ class ExpirationWrapper extends React.Component<ExpirationWrapperProps, Expirati
     super(props);
     this.state = {caughtError: ''};
   }
+
   render() {
     if (this.props.inputError || this.state.caughtError) {
       return (
