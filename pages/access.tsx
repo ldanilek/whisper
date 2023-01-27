@@ -161,7 +161,7 @@ export const getServerSideProps: GetServerSideProps = async ({req}) => {
   if (req === undefined) {
     return { props: {ip: null} };
   }
-  const ip = req.headers["x-real-ip"] || req.socket.remoteAddress;
+  const ip = req.headers["x-real-ip"] || req.socket.remoteAddress || null;
   return { props: {ip} };
 }
 
