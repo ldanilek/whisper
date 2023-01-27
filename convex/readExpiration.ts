@@ -6,7 +6,7 @@ import { readExpiration } from '../expiration';
 export default query(async ({ db }, name: string, creatorKey: string, currentTime: number): Promise<[string, number | null]> => {
   const whisperDoc = await db
     .query('whispers')
-    .withIndex('by_name', (q) => q.eq('name', name))
+    .withIndex('by_name', q => q.eq('name', name))
     .unique();
   if (whisperDoc!.creatorKey !== creatorKey) {
     throw Error('invalid creator key');

@@ -5,7 +5,7 @@ export default mutation(
   async ({ db }, whisperName: string, creatorKey: string) => {
     const whisperDoc = await db
       .query('whispers')
-      .withIndex('by_name', (q) => q.eq('name', whisperName))
+      .withIndex('by_name', q => q.eq('name', whisperName))
       .unique();
     if (whisperDoc!.creatorKey !== creatorKey) {
       throw Error('invalid creator key');
