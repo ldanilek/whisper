@@ -11,7 +11,7 @@ export async function createWhisper(
     secret: string,
     expiration: string,
     password: string,
-    mutation: (name: string, encryptedSecret: string, passwordHash: string, creatorKey: string, expiration: string) => Promise<null>,
+    createWhisperMutation: (name: string, encryptedSecret: string, passwordHash: string, creatorKey: string, expiration: string) => Promise<null>,
 ): Promise<CreateResponse> {
     const name = uuid.v4();
     const creatorKey = uuid.v4();
@@ -20,7 +20,7 @@ export async function createWhisper(
     }
     const encryptedSecret = CryptoJS.AES.encrypt(secret, password).toString();
     const passwordHash = hashPassword(password);
-    await mutation(name, encryptedSecret, passwordHash, creatorKey, expiration);
+    await createWhisperMutation(name, encryptedSecret, passwordHash, creatorKey, expiration);
     return {
       password,
       name,
