@@ -5,7 +5,7 @@ export default mutation(
     const whisperDoc = await db
       .query('whispers')
       .withIndex('by_name', (q) => q.eq('name', whisperName))
-      .first();
+      .unique();
     if (whisperDoc !== null) {
       throw Error('whisper already exists');
     }
