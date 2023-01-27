@@ -13,7 +13,7 @@ export default mutation(
     if (whisperDoc.passwordHash !== passwordHash) {
       throw Error('incorrect password');
     }
-    db.insert('accesses', {
+    await db.insert('accesses', {
       name: whisperName,
       accessKey,
       geolocation,

@@ -10,7 +10,7 @@ export default mutation(
     if (whisperDoc!.creatorKey !== creatorKey) {
       throw Error('invalid creator key');
     }
-    db.patch(whisperDoc!._id, {
+    await db.patch(whisperDoc!._id, {
       expiration: directExpirationOption,
     })
   }

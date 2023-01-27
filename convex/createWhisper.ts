@@ -9,7 +9,7 @@ export default mutation(
     if (whisperDoc !== null) {
       throw Error('whisper already exists');
     }
-    db.insert('whispers', {
+    await db.insert('whispers', {
       name: whisperName,
       encryptedSecret,
       passwordHash,
