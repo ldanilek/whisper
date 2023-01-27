@@ -1,6 +1,5 @@
 import { query } from './_generated/server'
-import { getValidWhisper, readExpiration } from '../expiration';
-import { Document } from './_generated/dataModel';
+import { readExpiration } from '../expiration';
 
 // Returns description of when the whisper expires, and a timestamp of when to next check.
 // Input currentTime invalidates the cache.

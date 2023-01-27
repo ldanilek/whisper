@@ -1,5 +1,4 @@
 import { query } from './_generated/server'
-import { getValidWhisper } from '../expiration';
 import { Document } from './_generated/dataModel';
 
 export default query(async ({ db }, name: string, creatorKey: string): Promise<Document<'accesses'>[]> => {

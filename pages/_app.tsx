@@ -1,10 +1,8 @@
 import '../styles/globals.css'
 import type { AppProps } from 'next/app'
 
-import clientConfig from '../convex/_generated/clientConfig'
 import { ConvexProvider, ConvexReactClient } from 'convex/react'
-import convexConfig from '../convex.json'
-const convex = new ConvexReactClient(clientConfig)
+const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 function MyApp({ Component, pageProps }: AppProps) {
   return (

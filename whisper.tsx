@@ -1,14 +1,8 @@
-import type { NextPage } from 'next'
 import Head from 'next/head'
 import Image from 'next/image'
 import styles from './styles/Home.module.css'
-import { useQuery, useMutation } from './convex/_generated/react'
-import { useCallback, useState, useEffect } from 'react'
-import { expirationOptions } from './expiration'
-import { useRouter } from 'next/router'
 
 const Whisper = ({children}: {children: any}) => {
-  const router = useRouter();
   return (
     <div className={styles.container}>
       <Head>
@@ -16,10 +10,10 @@ const Whisper = ({children}: {children: any}) => {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div onClick={() => router.push('/')} className={styles.header}>
-      <div className={styles.title}>
+      <div className={styles.header}>
+      <a href="/" className={styles.title}>
         Whisper
-      </div>
+      </a>
       <div className={styles.subtitle}>frictionless end-to-end encrypted secret sharing</div>
       </div>
       <main className={styles.main}>
