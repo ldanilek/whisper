@@ -53,11 +53,3 @@ export async function accessWhisper(
     await mutation(name, passwordHash, accessKey, geolocation, ip);
     return accessKey;
 }
-
-export function readWhisper(
-    encryptedSecret: string,
-    password: string,
-): string {
-    return CryptoJS.AES.decrypt(encryptedSecret, password).toString(CryptoJS.enc.Utf8);
-}
-

@@ -2,15 +2,18 @@ import type { GetServerSideProps, NextPage } from 'next'
 import styles from '../styles/Home.module.css'
 import { useQuery, useMutation } from '../convex/_generated/react'
 import { useState, useEffect } from 'react'
-import { accessWhisper, hashPassword, readWhisper } from '../common'
+import { accessWhisper, hashPassword } from '../common'
 import { useRouter } from 'next/router'
 import Whisper from '../whisper'
 import React from 'react'
+var CryptoJS = require("crypto-js");
 
 
 const SecretDisplay = ({name, accessKey, password}: {name: string, accessKey: string, password: string}) => {
-  const secret = useQuery('readSecret', name, accessKey);
-  return <div className={styles.secretDisplay + ' ' + styles.secretOutput}>{secret ? readWhisper(secret, password) : "Loading..."}</div>
+  const encryptedSecret = useQuery('readSecret', name, accessKey);
+  return <div className={styles.secretDisplay + ' ' + styles.secretOutput}>{
+    encryptedSecret ? CryptoJS.AES.decrypt(encryptedSecret, password).toString(CryptoJS.enc.Utf8) : "Loading..."
+  }</div>;
 }
 
 
