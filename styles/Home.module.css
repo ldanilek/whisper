@@ -49,7 +49,6 @@
   padding: 1em 16px;
   background-color: white;
   color: navy;
-  min-width: 200px;
 }
 
 .button {
@@ -63,7 +62,6 @@
   border-radius: 10px;
   transition: color 0.15s ease, border-color 0.15s ease;
   text-align: center;
-  width: 200px;
   background-color: #f0f0f0;
 }
 
@@ -82,7 +80,7 @@
 .accessLogEntry {
   border: 1px solid gray;
   border-radius: 10px;
-  margin: 2px;
+  margin: 1em;
   font-size: 0.8rem;
   padding: 2px;
   text-align: left;
@@ -149,7 +147,7 @@
   text-align: center;
   margin: 2rem 0;
   line-height: 1.5;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
 }
 
 .passwordInput {
