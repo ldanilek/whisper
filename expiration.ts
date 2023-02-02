@@ -3,7 +3,7 @@ import { DatabaseReader } from "./convex/_generated/server";
 
 export const expirationOptions = [
     'after one access',
-    //'after 20 seconds', // for testing
+    // 'after 20 seconds', // for testing
     'after ten accesses',
     'after five minutes',
     'after one week',
@@ -19,7 +19,7 @@ type Expiration = {
   afterAccessCount?: number,
 }
 
-function optionToExpiration(option: string): Expiration {
+export function optionToExpiration(option: string): Expiration {
   switch (option) {
     case 'after one access':
       return {afterAccessCount: 1};
@@ -114,6 +114,34 @@ function printDuration(duration: number): string {
     return '0 seconds';
   }
   return asStrings.join(', ');
+}
+
+export async function estimatedExpiration(
+  db: DatabaseReader,
+  name: string,
+): Promise<Date | null> {
+  const whisperDoc = await db
+      .query('whispers')
+      .withIndex('by_name', (q) => q.eq('name', name))
+      .unique();
+  const creation = whisperDoc!._creationTime;
+  const expiration = optionToExpiration(whisperDoc!.expiration);
+  if (expiration.never) {
+    return null;
+  } else if (expiration.manual) {
+    return null;
+  } else if (expiration.afterAccessCount) {
+    return null;
+  } else if (expiration.afterDuration) {
+    const after = creation + expiration.afterDuration;
+    const currentTime = (new Date()).getTime();
+    if (after < currentTime) {
+      return null;
+    } else {
+      return new Date(after);
+    }
+  }
+  throw Error('developer error');
 }
 
 export async function readExpiration(
