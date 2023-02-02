@@ -6,6 +6,8 @@ import { accessWhisper, hashPassword } from '../common'
 import { useRouter } from 'next/router'
 import Whisper from '../whisper'
 import React from 'react'
+import { ConvexHttpClient } from 'convex/browser'
+import { API } from '../convex/_generated/api.js'
 var CryptoJS = require("crypto-js");
 
 
@@ -96,14 +98,13 @@ class ExpirationWrapper extends React.Component<ExpirationWrapperProps, Expirati
 }
 
 
-const AccessPage: NextPage = ({ip}: any) => {
+const AccessPage: NextPage = ({accessKey, accessError}: any) => {
   const router = useRouter();
-  const [accessKey, setAccessKey] = useState<string | undefined>(undefined);
   const [name, setName] = useState<string | undefined>(undefined);
   const [password, setPassword] = useState<string | undefined>(undefined);
-  const accessWhisperMutation = useMutation('accessWhisper');
+  const recordGeolocation = useMutation('recordAccessGeolocation');
   const [inputPassword, setInputPassword] = useState<string>('');
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>(accessError);
   useEffect(() => {
     let password = router.query['password'] as string;
     setPassword(password);
@@ -112,13 +113,9 @@ const AccessPage: NextPage = ({ip}: any) => {
     if (name === undefined) {
       return;
     }
-    let accessKey = router.query["accessKey"] as string;
-    setAccessKey(accessKey);
-    if (password && !accessKey) {
+    if (password && !accessError) {
       getGeolocation().then((position) => {
-        accessWhisper(name, password, position as string | null, ip as string | null, accessWhisperMutation).then((accessKey) => {
-          router.push(`/access?name=${name}&accessKey=${accessKey}&password=${password}`);
-        }, (err) => {
+        recordGeolocation(name, accessKey, position as string | null).catch((err) => {
           setError(err.toString());
         })
       });
@@ -161,8 +158,22 @@ export const getServerSideProps: GetServerSideProps = async ({req}) => {
   if (req === undefined) {
     return { props: {ip: null} };
   }
-  const ip = req.headers["x-real-ip"] || req.socket.remoteAddress || null;
-  return { props: {ip} };
+  const ip = req.socket.remoteAddress || req.headers["x-real-ip"] as string || null;
+  let url = new URL(req.url!, `http://${req.headers.host}`);
+  const name = url.searchParams.get('name')!;
+  const password = url.searchParams.get('password')!;
+  const convex = new ConvexHttpClient<API>(process.env.NEXT_PUBLIC_CONVEX_URL!);
+  let accessKey = null;
+  let accessError = null;
+  await accessWhisper(name, password, ip, convex.mutation('accessWhisper')).then(
+    (k) => {
+      accessKey = k;
+    },
+    (e) => {
+      accessError = e.toString();
+    },
+  );
+  return { props: {accessKey, accessError} };
 }
 
 export default AccessPage

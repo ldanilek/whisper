@@ -44,12 +44,11 @@ export function makeURL(name: string, password: string | null): string {
 export async function accessWhisper(
     name: string,
     password: string,
-    geolocation: string | null,
     ip: string | null,
-    mutation: (name: string, passwordHash: string, accessKey: string, geolocation: string | null, ip: string | null) => Promise<null>,
+    mutation: (name: string, passwordHash: string, accessKey: string, ip: string | null, ssrKey: string) => Promise<null>,
 ): Promise<string> {
     const accessKey = uuid.v4();
     const passwordHash = hashPassword(password);
-    await mutation(name, passwordHash, accessKey, geolocation, ip);
+    await mutation(name, passwordHash, accessKey, ip, process.env.SSR_KEY!);
     return accessKey;
 }

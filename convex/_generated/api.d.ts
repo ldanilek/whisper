@@ -12,11 +12,13 @@
 import type { ApiFromModules } from "convex/api";
 import type * as accessWhisper from "../accessWhisper";
 import type * as createWhisper from "../createWhisper";
+import type * as deleteExpired from "../deleteExpired";
 import type * as expireNow from "../expireNow";
 import type * as readAccessLog from "../readAccessLog";
 import type * as readExpiration from "../readExpiration";
 import type * as readExpirationError from "../readExpirationError";
 import type * as readSecret from "../readSecret";
+import type * as recordAccessGeolocation from "../recordAccessGeolocation";
 
 /**
  * A type describing your app's public Convex API.
@@ -30,9 +32,11 @@ import type * as readSecret from "../readSecret";
 export type API = ApiFromModules<{
   accessWhisper: typeof accessWhisper;
   createWhisper: typeof createWhisper;
+  deleteExpired: typeof deleteExpired;
   expireNow: typeof expireNow;
   readAccessLog: typeof readAccessLog;
   readExpiration: typeof readExpiration;
   readExpirationError: typeof readExpirationError;
   readSecret: typeof readSecret;
+  recordAccessGeolocation: typeof recordAccessGeolocation;
 }>;

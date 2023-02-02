@@ -116,7 +116,7 @@ function printDuration(duration: number): string {
   return asStrings.join(', ');
 }
 
-export async function estimatedExpiration(
+export async function whenShouldDelete(
   db: DatabaseReader,
   name: string,
 ): Promise<Date | null> {
@@ -125,18 +125,25 @@ export async function estimatedExpiration(
       .withIndex('by_name', (q) => q.eq('name', name))
       .unique();
   const creation = whisperDoc!._creationTime;
+  const currentTime = (new Date()).getTime();
   const expiration = optionToExpiration(whisperDoc!.expiration);
   if (expiration.never) {
     return null;
   } else if (expiration.manual) {
-    return null;
+    return new Date();
   } else if (expiration.afterAccessCount) {
-    return null;
+    const accesses = await countAccesses(db, name);
+    if (accesses >= expiration.afterAccessCount) {
+      // In case the new access caused the secret to expire, give everyone with
+      // access keys a day to readSecret, then delete it.
+      return new Date(currentTime + 24 * 60 * 60 * 1000);
+    } else {
+      return null;
+    }
   } else if (expiration.afterDuration) {
     const after = creation + expiration.afterDuration;
-    const currentTime = (new Date()).getTime();
     if (after < currentTime) {
-      return null;
+      return new Date();
     } else {
       return new Date(after);
     }
