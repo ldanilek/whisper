@@ -156,7 +156,7 @@ export async function whenShouldDelete(
 export async function readExpiration(
     db: DatabaseReader,
     name: string,
-): Promise<[string, number | null]> {
+): Promise<[string, number | null, boolean]> {
   const whisperDoc = await db
       .query('whispers')
       .withIndex('by_name', (q) => q.eq('name', name))
@@ -164,24 +164,24 @@ export async function readExpiration(
   const creation = whisperDoc!._creationTime;
   const expiration = optionToExpiration(whisperDoc!.expiration);
   if (expiration.never) {
-    return ['will never expire', null];
+    return ['will never expire', null, false];
   } else if (expiration.manual) {
-    return ['manually expired', null];
+    return ['manually expired', null, true];
   } else if (expiration.afterAccessCount) {
     const accesses = await countAccesses(db, name);
     if (accesses >= expiration.afterAccessCount) {
-      return [`expired after ${accesses} access${accesses === 1 ? '' : 'es'}`, null];
+      return [`expired after ${accesses} access${accesses === 1 ? '' : 'es'}`, null, true];
     } else {
       const remaining = expiration.afterAccessCount-accesses;
-      return [`will expire after ${remaining} more access${remaining === 1 ? '' : 'es'}`, null];
+      return [`will expire after ${remaining} more access${remaining === 1 ? '' : 'es'}`, null, false];
     }
   } else if (expiration.afterDuration) {
     const after = creation + expiration.afterDuration;
     const currentTime = (new Date()).getTime();
     if (after < currentTime) {
-      return [`expired ${printDuration(currentTime - after)} ago`, currentTime + 1000];
+      return [`expired ${printDuration(currentTime - after)} ago`, currentTime + 1000, true];
     } else {
-      return [`will expire in ${printDuration(after - currentTime)}`, currentTime + 1000];
+      return [`will expire in ${printDuration(after - currentTime)}`, currentTime + 1000, false];
     }
   }
   throw Error('developer error');

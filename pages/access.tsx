@@ -44,7 +44,7 @@ const ExpirationDisplay = ({whisperName, passwordHash}: {whisperName: string, pa
     if (expiration === undefined) {
       return;
     }
-    const [newExpirationText, refresh] = expiration;
+    const [newExpirationText, refresh, _] = expiration;
     if (refresh) {
       setTimeout(() => {
         setCurrentTime(new Date().getTime());

@@ -7,29 +7,32 @@ import { useRouter } from 'next/router'
 import Whisper from '../whisper'
 
 const AccessLog = ({whisperName, creatorKey}: {whisperName: string, creatorKey: string}) => {
-  const accessDocs = useQuery('readAccessLog', whisperName, creatorKey);
+  const accessDocs = useQuery('readAccessLog', whisperName, creatorKey) || [];
   const [currentTime, setCurrentTime] = useState((new Date()).getTime());
   const expiration = useQuery('readExpiration', whisperName, creatorKey, currentTime);
   const [expirationText, setExpirationText] = useState<string>('');
+  const [isExpired, setIsExpired] = useState<boolean>(false);
   const expireNow = useMutation('expireNow');
   useEffect(() => {
     if (expiration === undefined) {
       return;
     }
-    const [expirationText, nextTime] = expiration;
-    setExpirationText(expirationText);
+    const nextTime = expiration[1];
+    setExpirationText(expiration[0]);
+    setIsExpired(expiration[2]);
     if (nextTime) {
       setTimeout(() => {
         setCurrentTime((new Date()).getTime());
       }, nextTime - (new Date()).getTime());
     }
   }, [expiration]);
-  if (accessDocs === undefined) {
-    return null;
-  }
   return (<div className={styles.accessLog}>
     <p>{accessDocs.length} {accessDocs.length === 1 ? "access" : "accesses"}; {expirationText ?? ''}</p>
-    <div><button className={styles.button} onClick={() => expireNow(whisperName, creatorKey)}>Expire Now</button></div>
+    {
+      isExpired ? // already expired
+      null :
+      <div><button className={styles.button} onClick={() => expireNow(whisperName, creatorKey)}>Expire Now</button></div>
+    }
     {accessDocs.map((accessDoc) =>
       <div key={accessDoc._id.toString()} className={styles.accessLogEntry}>
         {(new Date(accessDoc._creationTime)).toString()}
