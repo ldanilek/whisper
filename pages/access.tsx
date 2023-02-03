@@ -158,7 +158,7 @@ export const getServerSideProps: GetServerSideProps = async ({req}) => {
   if (req === undefined) {
     return { props: {ip: null} };
   }
-  const ip = req.socket.remoteAddress || req.headers["x-real-ip"] as string || null;
+  const ip = req.headers["x-real-ip"] as string || req.socket.remoteAddress || null;
   let url = new URL(req.url!, `http://${req.headers.host}`);
   const name = url.searchParams.get('name')!;
   const password = url.searchParams.get('password')!;
