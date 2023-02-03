@@ -1,3 +1,5 @@
+import { Scheduler } from "convex/server";
+import { API } from "./convex/_generated/api";
 import { Document } from "./convex/_generated/dataModel";
 import { DatabaseReader } from "./convex/_generated/server";
 
@@ -183,4 +185,16 @@ export async function readExpiration(
     }
   }
   throw Error('developer error');
+}
+
+export async function scheduleDeletion(
+  scheduler: Scheduler<API>,
+  db: DatabaseReader,
+  whisperName: string,
+  creatorKey: string,
+) {
+  const expireTime = await whenShouldDelete(db, whisperName);
+  if (expireTime) {
+    await scheduler.runAt(expireTime, "deleteExpired", whisperName, creatorKey);
+  }
 }

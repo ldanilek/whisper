@@ -19,6 +19,7 @@ import type * as readExpiration from "../readExpiration";
 import type * as readExpirationError from "../readExpirationError";
 import type * as readSecret from "../readSecret";
 import type * as recordAccessGeolocation from "../recordAccessGeolocation";
+import type * as security from "../security";
 
 /**
  * A type describing your app's public Convex API.
@@ -39,4 +40,5 @@ export type API = ApiFromModules<{
   readExpirationError: typeof readExpirationError;
   readSecret: typeof readSecret;
   recordAccessGeolocation: typeof recordAccessGeolocation;
+  security: typeof security;
 }>;

@@ -12,7 +12,7 @@ var CryptoJS = require("crypto-js");
 
 
 const SecretDisplay = ({name, accessKey, password}: {name: string, accessKey: string, password: string}) => {
-  const encryptedSecret = useQuery('readSecret', name, accessKey);
+  const encryptedSecret = useQuery('readSecret', name, accessKey, hashPassword(password));
   return <div className={styles.secretDisplay + ' ' + styles.secretOutput}>{
     encryptedSecret ? CryptoJS.AES.decrypt(encryptedSecret, password).toString(CryptoJS.enc.Utf8) : "Loading..."
   }</div>;
@@ -115,7 +115,7 @@ const AccessPage: NextPage = ({accessKey, accessError}: any) => {
     }
     if (password && !accessError) {
       getGeolocation().then((position) => {
-        recordGeolocation(name, accessKey, position as string | null).catch((err) => {
+        recordGeolocation(name, accessKey, position as string | null, hashPassword(password)).catch((err) => {
           setError(err.toString());
         })
       });

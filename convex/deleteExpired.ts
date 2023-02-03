@@ -1,5 +1,6 @@
 import { mutation } from './_generated/server'
-import { whenShouldDelete, getValidWhisper } from '../expiration'
+import { whenShouldDelete, scheduleDeletion } from '../expiration'
+import { timingSafeEqual } from './security';
 
 export default mutation(
   async ({ db, scheduler }, whisperName: string, creatorKey: string): Promise<void> => {
@@ -7,7 +8,7 @@ export default mutation(
       .query('whispers')
       .withIndex('by_name', q => q.eq('name', whisperName))
       .unique();
-    if (whisperDoc!.creatorKey !== creatorKey) {
+    if (!timingSafeEqual(whisperDoc!.creatorKey, creatorKey)) {
       throw Error('invalid creator key');
     }
     const toDelete = await whenShouldDelete(db, whisperName);
@@ -19,14 +20,14 @@ export default mutation(
       // Already deleted.
       return;
     }
-    if (toDelete < new Date()) {
+    if (toDelete <= new Date()) {
       // Expired. Delete the encrypted secret.
       await db.patch(whisperDoc!._id, {
         encryptedSecret: "",
       });
     } else {
       // Schedule to delete when it will expire.
-      await scheduler.runAt(toDelete, "deleteExpired", whisperName, creatorKey);
+      await scheduleDeletion(scheduler, db, whisperName, creatorKey);
     }
   }
 )

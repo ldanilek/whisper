@@ -1,5 +1,6 @@
 import { query } from './_generated/server'
 import { readExpiration } from '../expiration';
+import { timingSafeEqual } from './security';
 
 // Returns description of when the whisper expires, and a timestamp of when to next check.
 // Input currentTime invalidates the cache.
@@ -8,7 +9,7 @@ export default query(async ({ db }, name: string, passwordHash: string, currentT
     .query('whispers')
     .withIndex('by_name', q => q.eq('name', name))
     .unique();
-  if (whisperDoc!.passwordHash !== passwordHash) {
+  if (!timingSafeEqual(whisperDoc!.passwordHash, passwordHash)) {
     throw Error('invalid password hash');
   }
   return readExpiration(db, name);
