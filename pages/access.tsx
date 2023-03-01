@@ -81,6 +81,9 @@ class ExpirationWrapper extends React.Component<ExpirationWrapperProps, Expirati
 
   render() {
     if (this.props.inputError || this.state.caughtError) {
+      if (this.props.inputError) {
+        console.error(this.props.inputError);
+      }
       return (
         <Whisper>
           <ExpirationDisplay whisperName={this.props.whisperName} passwordHash={this.props.passwordHash} />
@@ -127,6 +130,7 @@ const AccessPage: NextPage = ({accessKey, accessError}: any) => {
   }
 
   if (name && !password) {
+    console.log("requesting password");
     return (
       <Whisper>
         <div>Password <input type='text' value={inputPassword} onChange={(e) => setInputPassword(e.target.value)} />
@@ -162,6 +166,9 @@ export const getServerSideProps: GetServerSideProps = async ({req}) => {
   let url = new URL(req.url!, `http://${req.headers.host}`);
   const name = url.searchParams.get('name')!;
   const password = url.searchParams.get('password')!;
+  if (!password) {
+    return { props: {accessKey: null, accessError: null} };
+  }
   const convex = new ConvexHttpClient<API>(process.env.NEXT_PUBLIC_CONVEX_URL!);
   let accessKey = null;
   let accessError = null;
