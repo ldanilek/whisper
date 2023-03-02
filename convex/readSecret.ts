@@ -2,7 +2,11 @@ import { query } from './_generated/server'
 import { getValidWhisper } from '../expiration';
 import { timingSafeEqual } from './security';
 
-export default query(async ({ db }, whisperName: string, accessKey: string, passwordHash: string): Promise<string> => {
+export default query(async ({ db, storage },
+  whisperName: string,
+  accessKey: string,
+  passwordHash: string,
+): Promise<{encryptedSecret: string, storageURLs: Map<string, string | null>}> => {
   const whisperDoc = await getValidWhisper(db, whisperName, false);
   if (!timingSafeEqual(whisperDoc.passwordHash, passwordHash)) {
     throw Error('incorrect password');
@@ -14,5 +18,13 @@ export default query(async ({ db }, whisperName: string, accessKey: string, pass
   if (!accessDoc) {
     throw new Error("accessKey invalid");
   }
-  return whisperDoc.encryptedSecret;
+  const storageURLs = await Promise.all(whisperDoc.storageIds.map(
+    async (storageId): Promise<[string, string | null]> => {
+      return [storageId, await storage.getUrl(storageId)];
+    }
+  ));
+  return {
+    encryptedSecret: whisperDoc.encryptedSecret,
+    storageURLs: new Map(storageURLs),
+  };
 })

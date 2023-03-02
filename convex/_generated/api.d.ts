@@ -14,6 +14,7 @@ import type * as accessWhisper from "../accessWhisper";
 import type * as createWhisper from "../createWhisper";
 import type * as deleteExpired from "../deleteExpired";
 import type * as expireNow from "../expireNow";
+import type * as fileUploadURL from "../fileUploadURL";
 import type * as readAccessLog from "../readAccessLog";
 import type * as readExpiration from "../readExpiration";
 import type * as readExpirationError from "../readExpirationError";
@@ -35,6 +36,7 @@ export type API = ApiFromModules<{
   createWhisper: typeof createWhisper;
   deleteExpired: typeof deleteExpired;
   expireNow: typeof expireNow;
+  fileUploadURL: typeof fileUploadURL;
   readAccessLog: typeof readAccessLog;
   readExpiration: typeof readExpiration;
   readExpirationError: typeof readExpirationError;

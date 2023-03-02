@@ -12,10 +12,39 @@ var CryptoJS = require("crypto-js");
 
 
 const SecretDisplay = ({name, accessKey, password}: {name: string, accessKey: string, password: string}) => {
-  const encryptedSecret = useQuery('readSecret', name, accessKey, hashPassword(password));
-  return <div className={styles.secretDisplay + ' ' + styles.secretOutput}>{
-    encryptedSecret ? CryptoJS.AES.decrypt(encryptedSecret, password).toString(CryptoJS.enc.Utf8) : "Loading..."
-  }</div>;
+  const { encryptedSecret, storageURLs } = useQuery('readSecret', name, accessKey, hashPassword(password)) ?? {encryptedSecret: undefined, storageURLs: []};
+  if (!encryptedSecret) {
+    return (
+      <div className={styles.secretDisplay + ' ' + styles.secretOutput}>{
+        "Loading..."
+      }</div>
+    );
+  }
+  let decryptedSecret: string = CryptoJS.AES.decrypt(encryptedSecret, password).toString(CryptoJS.enc.Utf8);
+  const attachments = [];
+  for (let [storageId, url] of Array.from(storageURLs.entries())) {
+    const matches = decryptedSecret.match(new RegExp(`Attachment: '[0-9a-fA-F]*' ${storageId}`)) ?? [];
+    for (let match of matches) {
+      let filenameHex = match.match(/'[0-9a-fA-F]*'/)![0];
+      filenameHex = filenameHex.slice(1, filenameHex.length-1);
+      const filename = Buffer.from(filenameHex, 'hex').toString();
+      const finalFilename = filename ? filename : 'unnamed';
+      attachments.push(<br />);
+      if (url === null) {
+        attachments.push(<p key={storageId}>{`missing attachment '${finalFilename}'`}</p>);
+      } else {
+        attachments.push(<a className={styles.secretAttachment} key={storageId} href={url} download={finalFilename}>{finalFilename}</a>);
+      }
+      decryptedSecret = decryptedSecret.replace(match, '');
+    }
+  }
+  return (
+    <div className={styles.secretDisplay + ' ' + styles.secretOutput}>{
+      decryptedSecret
+    }
+    {attachments}
+    </div>
+  );
 }
 
 

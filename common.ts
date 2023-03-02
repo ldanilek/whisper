@@ -1,3 +1,6 @@
+import { ReactMutation } from "convex/react";
+import { API } from "./convex/_generated/api";
+
 var uuid = require("uuid");
 var CryptoJS = require("crypto-js");
 
@@ -9,9 +12,10 @@ export type CreateResponse = {
 
 export async function createWhisper(
     secret: string,
+    storageIds: string[],
     expiration: string,
     password: string,
-    createWhisperMutation: (name: string, encryptedSecret: string, passwordHash: string, creatorKey: string, expiration: string) => Promise<null>,
+    createWhisperMutation: ReactMutation<API, 'createWhisper'>,
 ): Promise<CreateResponse> {
     const name = uuid.v4();
     const creatorKey = uuid.v4();
@@ -20,7 +24,7 @@ export async function createWhisper(
     }
     const encryptedSecret = CryptoJS.AES.encrypt(secret, password).toString();
     const passwordHash = hashPassword(password);
-    await createWhisperMutation(name, encryptedSecret, passwordHash, creatorKey, expiration);
+    await createWhisperMutation(name, encryptedSecret, storageIds, passwordHash, creatorKey, expiration);
     return {
       password,
       name,
