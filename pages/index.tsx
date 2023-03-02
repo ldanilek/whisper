@@ -6,7 +6,6 @@ import { createWhisper } from '../common'
 import { expirationOptions } from '../expiration'
 import { useRouter } from 'next/router'
 import Whisper from '../whisper'
-var CryptoJS = require("crypto-js");
 
 const Home: NextPage = () => {
   const createWhisperMutation = useMutation('createWhisper');
@@ -17,25 +16,7 @@ const Home: NextPage = () => {
   const [selectedFile, setSelectedFile] = useState<null | File>(null);
   const makeUploadURL = useMutation('fileUploadURL');
   const create = async () => {
-    const storageIds = [];
-    let fullSecret = secret;
-    if (selectedFile) {
-      const uploadURL = await makeUploadURL();
-      const fName = selectedFile.name;
-      const result = await fetch(uploadURL, {
-        method: "POST",
-        headers: { "Content-Type": 'application/octet-stream' },
-        body: selectedFile,
-      });
-      const resultJson = await result.json();
-      console.log(`storage result`, resultJson);
-      const storageId = resultJson['storageId'];
-      storageIds.push(storageId);
-      const name = Buffer.from(selectedFile.name, 'ascii').toString('hex');
-      console.log('file name is ', name);
-      fullSecret += `\nAttachment: '${name}' ${storageId}`;
-    }
-    const createResponse = await createWhisper(fullSecret, storageIds, expiration, password, createWhisperMutation);
+    const createResponse = await createWhisper(secret, selectedFile, expiration, password, createWhisperMutation, makeUploadURL);
     router.push(`/created?name=${createResponse.name}&creatorKey=${createResponse.creatorKey}&password=${createResponse.password}`);
   };
 
@@ -47,7 +28,7 @@ const Home: NextPage = () => {
           value={secret}
           onChange={(e) => setSecret(e.target.value)}
         />
-        <div>upload secret file <input type="file" onChange={(event) => setSelectedFile(event.target.files![0])} /></div>
+        <div>attach secret file <input type="file" onChange={(event) => setSelectedFile(event.target.files![0])} /></div>
         <div><span>expires&nbsp;</span>
         <select value={expiration} onChange={(e) => setExpiration(e.target.value)}>
           {

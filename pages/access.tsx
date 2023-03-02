@@ -11,6 +11,38 @@ import { API } from '../convex/_generated/api.js'
 var CryptoJS = require("crypto-js");
 
 
+const Attachment = ({url, filename, password}: {url: string | null, filename: string, password: string}) => {
+  const [fileBlob, setFileBlob] = useState<Blob | null>(null);
+  filename = filename ? filename : 'unnamed';
+  useEffect(() => {
+    if (!url) {
+      return;
+    }
+    fetch(url).then(async (resp) => {
+      const b = await resp.blob();
+      const encrypted = await b.text();  // `encrypted` is base64
+      const decrypted = CryptoJS.AES.decrypt(encrypted, password);
+      const decryptedStr = decrypted.toString(CryptoJS.enc.Utf8); // this is also base64
+      const decoded = Buffer.from(decryptedStr, 'base64');
+      var blob = new Blob([decoded]);
+      setFileBlob(blob);
+    });
+  }, [url, filename]);
+  if (url === null) {
+    return <span><br />{`missing attachment '${filename}'`}</span>;
+  }
+  if (fileBlob === null) {
+    return <span><br />{`Loading attachment ${filename}`}</span>;
+  }
+  const blobURL = window.URL.createObjectURL(fileBlob);
+  return <span>
+    <br />
+    <a className={styles.secretAttachment} href={blobURL} download={filename}>{filename}
+    </a>
+    </span>;
+};
+
+
 const SecretDisplay = ({name, accessKey, password}: {name: string, accessKey: string, password: string}) => {
   const { encryptedSecret, storageURLs } = useQuery('readSecret', name, accessKey, hashPassword(password)) ?? {encryptedSecret: undefined, storageURLs: []};
   if (!encryptedSecret) {
@@ -28,13 +60,7 @@ const SecretDisplay = ({name, accessKey, password}: {name: string, accessKey: st
       let filenameHex = match.match(/'[0-9a-fA-F]*'/)![0];
       filenameHex = filenameHex.slice(1, filenameHex.length-1);
       const filename = Buffer.from(filenameHex, 'hex').toString();
-      const finalFilename = filename ? filename : 'unnamed';
-      attachments.push(<br />);
-      if (url === null) {
-        attachments.push(<p key={storageId}>{`missing attachment '${finalFilename}'`}</p>);
-      } else {
-        attachments.push(<a className={styles.secretAttachment} key={storageId} href={url} download={finalFilename}>{finalFilename}</a>);
-      }
+      attachments.push(<Attachment key={storageId} url={url} filename={filename} password={password} />);
       decryptedSecret = decryptedSecret.replace(match, '');
     }
   }
