@@ -1,6 +1,6 @@
 import { Scheduler } from "convex/server";
 import { API } from "./convex/_generated/api";
-import { Document } from "./convex/_generated/dataModel";
+import { Doc } from "./convex/_generated/dataModel";
 import { DatabaseReader } from "./convex/_generated/server";
 
 export const expirationOptions = [
@@ -57,7 +57,7 @@ export async function getValidWhisper(
   db: DatabaseReader,
   name: string,
   newAccess: boolean,
-): Promise<Document<'whispers'>> {
+): Promise<Doc<'whispers'>> {
   const whisperDoc = await db
       .query('whispers')
       .withIndex('by_name', (q) => q.eq('name', name))
