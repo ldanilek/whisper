@@ -3,7 +3,7 @@ import { whenShouldDelete, scheduleDeletion } from '../expiration'
 import { timingSafeEqual } from './security';
 
 export default mutation(
-  async ({ db, scheduler }, whisperName: string, creatorKey: string): Promise<void> => {
+  async ({ db, scheduler, storage }, whisperName: string, creatorKey: string): Promise<void> => {
     const whisperDoc = await db
       .query('whispers')
       .withIndex('by_name', q => q.eq('name', whisperName))
@@ -22,9 +22,15 @@ export default mutation(
     }
     if (toDelete <= new Date()) {
       // Expired. Delete the encrypted secret.
-      await db.patch(whisperDoc!._id, {
-        encryptedSecret: "",
-      });
+      const promises = [
+        db.patch(whisperDoc!._id, {
+          encryptedSecret: "",
+        })
+      ];
+      for (let storageId of whisperDoc!.storageIds) {
+        promises.push(storage.delete(storageId));
+      }
+      await Promise.all(promises);
     } else {
       // Schedule to delete when it will expire.
       await scheduleDeletion(scheduler, db, whisperName, creatorKey);

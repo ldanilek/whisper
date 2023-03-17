@@ -5,6 +5,8 @@ export default defineSchema({
     name: s.string(),
     // Encrypted with password.
     encryptedSecret: s.string(),
+    // Each stored file is encrypted with password.
+    storageIds: s.array(s.string()),
     // So recipient can prove to server (in accessWhisper) that they are allowed
     // to read the secret.
     passwordHash: s.string(),

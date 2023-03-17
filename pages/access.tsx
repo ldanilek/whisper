@@ -11,11 +11,66 @@ import { API } from '../convex/_generated/api.js'
 var CryptoJS = require("crypto-js");
 
 
+const Attachment = ({url, filename, password}: {url: string | null, filename: string, password: string}) => {
+  const [fileBlob, setFileBlob] = useState<Blob | null>(null);
+  filename = filename ? filename : 'unnamed';
+  useEffect(() => {
+    if (!url) {
+      return;
+    }
+    fetch(url).then(async (resp) => {
+      const b = await resp.blob();
+      const encrypted = await b.text();  // `encrypted` is base64
+      const decrypted = CryptoJS.AES.decrypt(encrypted, password);
+      const decryptedStr = decrypted.toString(CryptoJS.enc.Utf8); // this is also base64
+      const decoded = Buffer.from(decryptedStr, 'base64');
+      var blob = new Blob([decoded]);
+      setFileBlob(blob);
+    });
+  }, [url, filename]);
+  if (url === null) {
+    return <span><br />{`missing attachment '${filename}'`}</span>;
+  }
+  if (fileBlob === null) {
+    return <span><br />{`Loading attachment ${filename}`}</span>;
+  }
+  const blobURL = window.URL.createObjectURL(fileBlob);
+  return <span>
+    <br />
+    <a className={styles.secretAttachment} href={blobURL} download={filename}>{filename}
+    </a>
+    </span>;
+};
+
+
 const SecretDisplay = ({name, accessKey, password}: {name: string, accessKey: string, password: string}) => {
-  const encryptedSecret = useQuery('readSecret', name, accessKey, hashPassword(password));
-  return <div className={styles.secretDisplay + ' ' + styles.secretOutput}>{
-    encryptedSecret ? CryptoJS.AES.decrypt(encryptedSecret, password).toString(CryptoJS.enc.Utf8) : "Loading..."
-  }</div>;
+  const { encryptedSecret, storageURLs } = useQuery('readSecret', name, accessKey, hashPassword(password)) ?? {encryptedSecret: undefined, storageURLs: []};
+  if (!encryptedSecret) {
+    return (
+      <div className={styles.secretDisplay + ' ' + styles.secretOutput}>{
+        "Loading..."
+      }</div>
+    );
+  }
+  let decryptedSecret: string = CryptoJS.AES.decrypt(encryptedSecret, password).toString(CryptoJS.enc.Utf8);
+  const attachments = [];
+  for (let [storageId, url] of Array.from(storageURLs.entries())) {
+    const matches = decryptedSecret.match(new RegExp(`Attachment: '[0-9a-fA-F]*' ${storageId}`)) ?? [];
+    for (let match of matches) {
+      let filenameHex = match.match(/'[0-9a-fA-F]*'/)![0];
+      filenameHex = filenameHex.slice(1, filenameHex.length-1);
+      const filename = Buffer.from(filenameHex, 'hex').toString();
+      attachments.push(<Attachment key={storageId} url={url} filename={filename} password={password} />);
+      decryptedSecret = decryptedSecret.replace(match, '');
+    }
+  }
+  return (
+    <div className={styles.secretDisplay + ' ' + styles.secretOutput}>{
+      decryptedSecret
+    }
+    {attachments}
+    </div>
+  );
 }
 
 
@@ -81,6 +136,9 @@ class ExpirationWrapper extends React.Component<ExpirationWrapperProps, Expirati
 
   render() {
     if (this.props.inputError || this.state.caughtError) {
+      if (this.props.inputError) {
+        console.error(this.props.inputError);
+      }
       return (
         <Whisper>
           <ExpirationDisplay whisperName={this.props.whisperName} passwordHash={this.props.passwordHash} />
@@ -127,6 +185,7 @@ const AccessPage: NextPage = ({accessKey, accessError}: any) => {
   }
 
   if (name && !password) {
+    console.log("requesting password");
     return (
       <Whisper>
         <div>Password <input type='text' value={inputPassword} onChange={(e) => setInputPassword(e.target.value)} />
@@ -162,6 +221,9 @@ export const getServerSideProps: GetServerSideProps = async ({req}) => {
   let url = new URL(req.url!, `http://${req.headers.host}`);
   const name = url.searchParams.get('name')!;
   const password = url.searchParams.get('password')!;
+  if (!password) {
+    return { props: {accessKey: null, accessError: null} };
+  }
   const convex = new ConvexHttpClient<API>(process.env.NEXT_PUBLIC_CONVEX_URL!);
   let accessKey = null;
   let accessError = null;

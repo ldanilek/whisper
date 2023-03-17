@@ -1,3 +1,6 @@
+import { ReactMutation } from "convex/react";
+import { API } from "./convex/_generated/api";
+
 var uuid = require("uuid");
 var CryptoJS = require("crypto-js");
 
@@ -7,20 +10,52 @@ export type CreateResponse = {
   password: string,
 }
 
+const encryptFile = async (blob: Blob, password: string): Promise<Blob> => {
+  // i don't know how to invert blob.text() when the file isn't ascii, so use blob.arrayBuffer().
+  const arrayBuffer = await blob.arrayBuffer();
+  const uint8Array = new Uint8Array(arrayBuffer);
+  const encodedString = Buffer.from(uint8Array).toString("base64");
+  const encrypted = CryptoJS.AES.encrypt(encodedString, password);
+  const encryptedEncoded = encrypted.toString();  // base64
+  return new Blob([encryptedEncoded]);
+}
+
 export async function createWhisper(
     secret: string,
+    selectedFile: File | null,
     expiration: string,
     password: string,
-    createWhisperMutation: (name: string, encryptedSecret: string, passwordHash: string, creatorKey: string, expiration: string) => Promise<null>,
+    createWhisperMutation: ReactMutation<API, 'createWhisper'>,
+    makeUploadURL: ReactMutation<API, 'fileUploadURL'>,
 ): Promise<CreateResponse> {
     const name = uuid.v4();
     const creatorKey = uuid.v4();
     if (password.length === 0) {
       password = uuid.v4();
     }
+    const storageIds = [];
+    if (selectedFile) {
+      const [uploadURL, encryptedFile] = await Promise.all([
+        makeUploadURL(),
+        encryptFile(selectedFile, password),
+      ]);
+      const result = await fetch(uploadURL, {
+        method: "POST",
+        headers: { "Content-Type": 'application/octet-stream' },
+        body: encryptedFile,
+      });
+      const resultJson = await result.json();
+      if (!result.ok) {
+        console.error(resultJson);
+      }
+      const storageId = resultJson['storageId'];
+      storageIds.push(storageId);
+      const name = Buffer.from(selectedFile.name, 'ascii').toString('hex');
+      secret += `\nAttachment: '${name}' ${storageId}`;
+    }
     const encryptedSecret = CryptoJS.AES.encrypt(secret, password).toString();
     const passwordHash = hashPassword(password);
-    await createWhisperMutation(name, encryptedSecret, passwordHash, creatorKey, expiration);
+    await createWhisperMutation(name, encryptedSecret, storageIds, passwordHash, creatorKey, expiration);
     return {
       password,
       name,
@@ -49,6 +84,9 @@ export async function accessWhisper(
 ): Promise<string> {
     const accessKey = uuid.v4();
     const passwordHash = hashPassword(password);
+    if (!process.env.SSR_KEY) {
+      throw new Error('need SSR_KEY');
+    }
     await mutation(name, passwordHash, accessKey, ip, process.env.SSR_KEY!);
     return accessKey;
 }

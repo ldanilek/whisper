@@ -13,14 +13,22 @@ const Home: NextPage = () => {
   const [expiration, setExpiration] = useState(expirationOptions[0]);
   const [password, setPassword] = useState('');
   const router = useRouter();
+  const [selectedFile, setSelectedFile] = useState<null | File>(null);
+  const makeUploadURL = useMutation('fileUploadURL');
   const create = async () => {
-    const createResponse = await createWhisper(secret, expiration, password, createWhisperMutation);
+    const createResponse = await createWhisper(secret, selectedFile, expiration, password, createWhisperMutation, makeUploadURL);
     router.push(`/created?name=${createResponse.name}&creatorKey=${createResponse.creatorKey}&password=${createResponse.password}`);
   };
 
   return (
     <Whisper>
-        <textarea className={styles.secretDisplay} placeholder='secret' value={secret} onChange={(e) => setSecret(e.target.value)} />
+        <textarea
+          className={styles.secretDisplay}
+          placeholder='secret'
+          value={secret}
+          onChange={(e) => setSecret(e.target.value)}
+        />
+        <div>attach secret file <input type="file" onChange={(event) => setSelectedFile(event.target.files![0])} /></div>
         <div><span>expires&nbsp;</span>
         <select value={expiration} onChange={(e) => setExpiration(e.target.value)}>
           {
