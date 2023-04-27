@@ -3,7 +3,7 @@ import { directExpirationOption, getValidWhisper, scheduleDeletion } from '../ex
 import { timingSafeEqual } from './security';
 
 export default mutation(
-  async ({ db, scheduler }, whisperName: string, creatorKey: string): Promise<void> => {
+  async ({ db, scheduler }, {whisperName, creatorKey}: {whisperName: string, creatorKey: string}): Promise<void> => {
     const whisperDoc = await getValidWhisper(db, whisperName, false);
     if (!timingSafeEqual(whisperDoc!.creatorKey, creatorKey)) {
       throw Error('invalid creator key');

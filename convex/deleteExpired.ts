@@ -3,7 +3,7 @@ import { whenShouldDelete, scheduleDeletion } from '../expiration'
 import { timingSafeEqual } from './security';
 
 export default mutation(
-  async ({ db, scheduler, storage }, whisperName: string, creatorKey: string): Promise<void> => {
+  async ({ db, scheduler, storage }, {whisperName, creatorKey}: {whisperName: string, creatorKey: string}): Promise<void> => {
     const whisperDoc = await db
       .query('whispers')
       .withIndex('by_name', q => q.eq('name', whisperName))

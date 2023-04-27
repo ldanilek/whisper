@@ -1,25 +1,26 @@
-import { defineSchema, defineTable, s } from "convex/schema";
+import { defineSchema, defineTable } from "convex/schema";
+import { v } from "convex/values";
 
 export default defineSchema({
   whispers: defineTable({
-    name: s.string(),
+    name: v.string(),
     // Encrypted with password.
-    encryptedSecret: s.string(),
+    encryptedSecret: v.string(),
     // Each stored file is encrypted with password.
-    storageIds: s.array(s.string()),
+    storageIds: v.array(v.string()),
     // So recipient can prove to server (in accessWhisper) that they are allowed
     // to read the secret.
-    passwordHash: s.string(),
+    passwordHash: v.string(),
     // So creator can prove that they can configure the secret and read accesses.
-    creatorKey: s.string(),
+    creatorKey: v.string(),
 
-    expiration: s.string(),
+    expiration: v.string(),
   }).index('by_name', ['name']),
   accesses: defineTable({
-    name: s.string(),
-    accessKey: s.string(),
-    geolocation: s.union(s.string(), s.null()),
-    ip: s.union(s.string(), s.null()),
+    name: v.string(),
+    accessKey: v.string(),
+    geolocation: v.union(v.string(), v.null()),
+    ip: v.union(v.string(), v.null()),
   })
   .index('by_name_and_key', ['name', 'accessKey'])
   .index('by_name_and_creation', ['name']),

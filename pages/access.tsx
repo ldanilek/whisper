@@ -44,7 +44,7 @@ const Attachment = ({url, filename, password}: {url: string | null, filename: st
 
 
 const SecretDisplay = ({name, accessKey, password}: {name: string, accessKey: string, password: string}) => {
-  const { encryptedSecret, storageURLs } = useQuery('readSecret', name, accessKey, hashPassword(password)) ?? {encryptedSecret: undefined, storageURLs: []};
+  const { encryptedSecret, storageURLs } = useQuery('readSecret', {whisperName: name, accessKey, passwordHash: hashPassword(password)}) ?? {encryptedSecret: undefined, storageURLs: []};
   if (!encryptedSecret) {
     return (
       <div className={styles.secretDisplay + ' ' + styles.secretOutput}>{
@@ -93,7 +93,7 @@ const getGeolocation = async () => {
 
 const ExpirationDisplay = ({whisperName, passwordHash}: {whisperName: string, passwordHash: string}) => {
   const [currentTime, setCurrentTime] = useState(new Date().getTime());
-  const expiration = useQuery('readExpirationError', whisperName, passwordHash, currentTime);
+  const expiration = useQuery('readExpirationError', {name: whisperName, passwordHash, currentTime});
   const [expirationText, setExpirationText] = useState<string | null>(null);
   useEffect(() => {
     if (expiration === undefined) {
@@ -173,7 +173,7 @@ const AccessPage: NextPage = ({accessKey, accessError}: any) => {
     }
     if (password && !accessError) {
       getGeolocation().then((position) => {
-        recordGeolocation(name, accessKey, position as string | null, hashPassword(password)).catch((err) => {
+        recordGeolocation({whisperName: name, accessKey, geolocation: position as string | null, passwordHash: hashPassword(password)}).catch((err) => {
           setError(err.toString());
         })
       });
@@ -227,7 +227,7 @@ export const getServerSideProps: GetServerSideProps = async ({req}) => {
   const convex = new ConvexHttpClient<API>(process.env.NEXT_PUBLIC_CONVEX_URL!);
   let accessKey = null;
   let accessError = null;
-  await accessWhisper(name, password, ip, convex.mutation('accessWhisper')).then(
+  await accessWhisper(name, password, ip, ((args: any) => convex.mutation('accessWhisper', args)) as any).then(
     (k) => {
       accessKey = k;
     },

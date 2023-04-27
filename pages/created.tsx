@@ -7,9 +7,9 @@ import { useRouter } from 'next/router'
 import Whisper from '../whisper'
 
 const AccessLog = ({whisperName, creatorKey}: {whisperName: string, creatorKey: string}) => {
-  const accessDocs = useQuery('readAccessLog', whisperName, creatorKey) || [];
+  const accessDocs = useQuery('readAccessLog', {name: whisperName, creatorKey}) || [];
   const [currentTime, setCurrentTime] = useState((new Date()).getTime());
-  const expiration = useQuery('readExpiration', whisperName, creatorKey, currentTime);
+  const expiration = useQuery('readExpiration', {name: whisperName, creatorKey, currentTime});
   const [expirationText, setExpirationText] = useState<string>('');
   const [isExpired, setIsExpired] = useState<boolean>(false);
   const expireNow = useMutation('expireNow');
@@ -31,7 +31,7 @@ const AccessLog = ({whisperName, creatorKey}: {whisperName: string, creatorKey: 
     {
       isExpired ? // already expired
       null :
-      <div><button className={styles.button} onClick={() => expireNow(whisperName, creatorKey)}>Expire Now</button></div>
+      <div><button className={styles.button} onClick={() => expireNow({whisperName, creatorKey})}>Expire Now</button></div>
     }
     {accessDocs.map((accessDoc) =>
       <div key={accessDoc._id.toString()} className={styles.accessLogEntry}>

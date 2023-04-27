@@ -32,6 +32,7 @@
   font-family: monospace;
   border-radius: 10px;
   background-color: white;
+  white-space: pre-wrap;
 }
 
 .copiable {

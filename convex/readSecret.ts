@@ -3,9 +3,10 @@ import { getValidWhisper } from '../expiration';
 import { timingSafeEqual } from './security';
 
 export default query(async ({ db, storage },
-  whisperName: string,
+  {whisperName, accessKey, passwordHash}:
+  {whisperName: string,
   accessKey: string,
-  passwordHash: string,
+  passwordHash: string},
 ): Promise<{encryptedSecret: string, storageURLs: Map<string, string | null>}> => {
   const whisperDoc = await getValidWhisper(db, whisperName, false);
   if (!timingSafeEqual(whisperDoc.passwordHash, passwordHash)) {

@@ -4,10 +4,11 @@ import { timingSafeEqual } from './security';
 
 export default mutation(
   async ({ db }, 
-    whisperName: string, 
+    {whisperName, accessKey, geolocation, passwordHash}:
+    {whisperName: string, 
     accessKey: string, 
     geolocation: string | null, 
-    passwordHash: string,
+    passwordHash: string},
   ) => {
     const whisperDoc = await getValidWhisper(db, whisperName, false);
     if (!timingSafeEqual(whisperDoc.passwordHash, passwordHash)) {

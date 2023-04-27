@@ -55,7 +55,7 @@ export async function createWhisper(
     }
     const encryptedSecret = CryptoJS.AES.encrypt(secret, password).toString();
     const passwordHash = hashPassword(password);
-    await createWhisperMutation(name, encryptedSecret, storageIds, passwordHash, creatorKey, expiration);
+    await createWhisperMutation({whisperName: name, encryptedSecret, storageIds, passwordHash, creatorKey, expiration});
     return {
       password,
       name,
@@ -80,13 +80,13 @@ export async function accessWhisper(
     name: string,
     password: string,
     ip: string | null,
-    mutation: (name: string, passwordHash: string, accessKey: string, ip: string | null, ssrKey: string) => Promise<null>,
+    mutation: ReactMutation<API, 'accessWhisper'>,
 ): Promise<string> {
     const accessKey = uuid.v4();
     const passwordHash = hashPassword(password);
     if (!process.env.SSR_KEY) {
       throw new Error('need SSR_KEY');
     }
-    await mutation(name, passwordHash, accessKey, ip, process.env.SSR_KEY!);
+    await mutation({whisperName: name, passwordHash, accessKey, ip, ssrKey: process.env.SSR_KEY!});
     return accessKey;
 }

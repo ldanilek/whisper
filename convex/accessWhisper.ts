@@ -4,11 +4,12 @@ import { timingSafeEqual } from './security';
 
 export default mutation(
   async ({ db, scheduler }, 
-    whisperName: string, 
+    {whisperName, passwordHash, accessKey, ip, ssrKey}:
+    {whisperName: string, 
     passwordHash: string, 
     accessKey: string, 
     ip: string | null,  // from HTTP handler, to impede spoofing
-    ssrKey: string,  // can only be called from authorized servers
+    ssrKey: string},  // can only be called from authorized servers
   ) => {
     // @ts-ignore process global doesn't typecheck.
     if (!ssrKey || !timingSafeEqual(ssrKey, process.env.SSR_KEY)) {

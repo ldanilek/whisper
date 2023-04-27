@@ -3,12 +3,13 @@ import { scheduleDeletion } from "../expiration"
 
 export default mutation(
   async ({ db, scheduler },
-    whisperName: string,
+    {whisperName, encryptedSecret, storageIds, passwordHash, creatorKey, expiration}:
+    {whisperName: string,
     encryptedSecret: string,
     storageIds: string[],
     passwordHash: string,
     creatorKey: string,
-    expiration: string,
+    expiration: string},
   ) => {
     const whisperDoc = await db
       .query('whispers')

@@ -195,6 +195,6 @@ export async function scheduleDeletion(
 ) {
   const expireTime = await whenShouldDelete(db, whisperName);
   if (expireTime) {
-    await scheduler.runAt(expireTime, "deleteExpired", whisperName, creatorKey);
+    await scheduler.runAt(expireTime, "deleteExpired", {whisperName, creatorKey});
   }
 }
