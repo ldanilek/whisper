@@ -19,7 +19,7 @@ export default query(async ({ db, storage },
   if (!accessDoc) {
     throw new Error("accessKey invalid");
   }
-  const storageURLs = await Promise.all(whisperDoc.storageIds.map(
+  const storageURLs = await Promise.all((whisperDoc.storageIds ?? []).map(
     async (storageId): Promise<[string, string | null]> => {
       return [storageId, await storage.getUrl(storageId)];
     }

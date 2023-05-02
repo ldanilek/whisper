@@ -27,7 +27,7 @@ export default mutation(
           encryptedSecret: "",
         })
       ];
-      for (let storageId of whisperDoc!.storageIds) {
+      for (let storageId of whisperDoc!.storageIds ?? []) {
         promises.push(storage.delete(storageId));
       }
       await Promise.all(promises);
