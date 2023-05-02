@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "concurrently": "^7.6.0",
-    "convex": "^0.13.0",
+    "convex": "^0.14.0",
     "crypto-js": "^4.1.1",
     "next": "latest",
     "react": "^18.2.0",
