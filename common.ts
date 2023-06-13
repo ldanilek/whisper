@@ -1,5 +1,5 @@
 import { ReactMutation } from "convex/react";
-import { API } from "./convex/_generated/api";
+import { api } from "./convex/_generated/api";
 
 var uuid = require("uuid");
 var CryptoJS = require("crypto-js");
@@ -25,8 +25,8 @@ export async function createWhisper(
     selectedFile: File | null,
     expiration: string,
     password: string,
-    createWhisperMutation: ReactMutation<API, 'createWhisper'>,
-    makeUploadURL: ReactMutation<API, 'fileUploadURL'>,
+    createWhisperMutation: ReactMutation<typeof api.createWhisper.default>,
+    makeUploadURL: ReactMutation<typeof api.fileUploadURL.default>,
 ): Promise<CreateResponse> {
     const name = uuid.v4();
     const creatorKey = uuid.v4();
@@ -80,7 +80,7 @@ export async function accessWhisper(
     name: string,
     password: string,
     ip: string | null,
-    mutation: ReactMutation<API, 'accessWhisper'>,
+    mutation: ReactMutation<typeof api.accessWhisper.default>,
 ): Promise<string> {
     const accessKey = uuid.v4();
     const passwordHash = hashPassword(password);

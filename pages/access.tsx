@@ -1,13 +1,13 @@
 import type { GetServerSideProps, NextPage } from 'next'
 import styles from '../styles/Home.module.css'
-import { useQuery, useMutation } from '../convex/_generated/react'
+import { useQuery, useMutation } from 'convex/react'
 import { useState, useEffect } from 'react'
 import { accessWhisper, hashPassword } from '../common'
 import { useRouter } from 'next/router'
 import Whisper from '../whisper'
 import React from 'react'
 import { ConvexHttpClient } from 'convex/browser'
-import { API } from '../convex/_generated/api.js'
+import { api } from '../convex/_generated/api'
 var CryptoJS = require("crypto-js");
 
 
@@ -44,7 +44,7 @@ const Attachment = ({url, filename, password}: {url: string | null, filename: st
 
 
 const SecretDisplay = ({name, accessKey, password}: {name: string, accessKey: string, password: string}) => {
-  const { encryptedSecret, storageURLs } = useQuery('readSecret', {whisperName: name, accessKey, passwordHash: hashPassword(password)}) ?? {encryptedSecret: undefined, storageURLs: []};
+  const { encryptedSecret, storageURLs } = useQuery(api.readSecret.default, {whisperName: name, accessKey, passwordHash: hashPassword(password)}) ?? {encryptedSecret: undefined, storageURLs: []};
   if (!encryptedSecret) {
     return (
       <div className={styles.secretDisplay + ' ' + styles.secretOutput}>{
@@ -93,7 +93,7 @@ const getGeolocation = async () => {
 
 const ExpirationDisplay = ({whisperName, passwordHash}: {whisperName: string, passwordHash: string}) => {
   const [currentTime, setCurrentTime] = useState(new Date().getTime());
-  const expiration = useQuery('readExpirationError', {name: whisperName, passwordHash, currentTime});
+  const expiration = useQuery(api.readExpirationError.default, {name: whisperName, passwordHash, currentTime});
   const [expirationText, setExpirationText] = useState<string | null>(null);
   useEffect(() => {
     if (expiration === undefined) {
@@ -160,7 +160,7 @@ const AccessPage: NextPage = ({accessKey, accessError}: any) => {
   const router = useRouter();
   const [name, setName] = useState<string | undefined>(undefined);
   const [password, setPassword] = useState<string | undefined>(undefined);
-  const recordGeolocation = useMutation('recordAccessGeolocation');
+  const recordGeolocation = useMutation(api.recordAccessGeolocation.default);
   const [inputPassword, setInputPassword] = useState<string>('');
   const [error, setError] = useState<string>(accessError);
   useEffect(() => {
@@ -224,10 +224,10 @@ export const getServerSideProps: GetServerSideProps = async ({req}) => {
   if (!password) {
     return { props: {accessKey: null, accessError: null} };
   }
-  const convex = new ConvexHttpClient<API>(process.env.NEXT_PUBLIC_CONVEX_URL!);
+  const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
   let accessKey = null;
   let accessError = null;
-  await accessWhisper(name, password, ip, ((args: any) => convex.mutation('accessWhisper', args)) as any).then(
+  await accessWhisper(name, password, ip, ((args: any) => convex.mutation(api.accessWhisper.default, args)) as any).then(
     (k) => {
       accessKey = k;
     },

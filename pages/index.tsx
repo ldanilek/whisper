@@ -1,20 +1,21 @@
 import type { NextPage } from 'next'
 import styles from '../styles/Home.module.css'
-import { useMutation } from '../convex/_generated/react'
+import { useMutation } from 'convex/react'
 import { useState } from 'react'
 import { createWhisper } from '../common'
 import { expirationOptions } from '../expiration'
 import { useRouter } from 'next/router'
 import Whisper from '../whisper'
+import { api } from '../convex/_generated/api'
 
 const Home: NextPage = () => {
-  const createWhisperMutation = useMutation('createWhisper');
+  const createWhisperMutation = useMutation(api.createWhisper.default);
   const [secret, setSecret] = useState('');
   const [expiration, setExpiration] = useState(expirationOptions[0]);
   const [password, setPassword] = useState('');
   const router = useRouter();
   const [selectedFile, setSelectedFile] = useState<null | File>(null);
-  const makeUploadURL = useMutation('fileUploadURL');
+  const makeUploadURL = useMutation(api.fileUploadURL.default);
   const create = async () => {
     const createResponse = await createWhisper(secret, selectedFile, expiration, password, createWhisperMutation, makeUploadURL);
     router.push(`/created?name=${createResponse.name}&creatorKey=${createResponse.creatorKey}&password=${createResponse.password}`);

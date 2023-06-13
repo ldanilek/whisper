@@ -1,7 +1,7 @@
 import { Scheduler } from "convex/server";
-import { API } from "./convex/_generated/api";
 import { Doc } from "./convex/_generated/dataModel";
 import { DatabaseReader } from "./convex/_generated/server";
+import { api } from "./convex/_generated/api";
 
 export const expirationOptions = [
     'after one access',
@@ -188,13 +188,13 @@ export async function readExpiration(
 }
 
 export async function scheduleDeletion(
-  scheduler: Scheduler<API>,
+  scheduler: Scheduler,
   db: DatabaseReader,
   whisperName: string,
   creatorKey: string,
 ) {
   const expireTime = await whenShouldDelete(db, whisperName);
   if (expireTime) {
-    await scheduler.runAt(expireTime, "deleteExpired", {whisperName, creatorKey});
+    await scheduler.runAt(expireTime, api.deleteExpired.default, {whisperName, creatorKey});
   }
 }

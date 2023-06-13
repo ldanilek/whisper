@@ -1,18 +1,19 @@
 import type { NextPage } from 'next'
 import styles from '../styles/Home.module.css'
-import { useQuery, useMutation } from '../convex/_generated/react'
+import { useQuery, useMutation } from 'convex/react'
 import { useState, useEffect } from 'react'
 import { makeURL } from '../common'
 import { useRouter } from 'next/router'
 import Whisper from '../whisper'
+import { api } from '../convex/_generated/api'
 
 const AccessLog = ({whisperName, creatorKey}: {whisperName: string, creatorKey: string}) => {
-  const accessDocs = useQuery('readAccessLog', {name: whisperName, creatorKey}) || [];
+  const accessDocs = useQuery(api.readAccessLog.default, {name: whisperName, creatorKey}) || [];
   const [currentTime, setCurrentTime] = useState((new Date()).getTime());
-  const expiration = useQuery('readExpiration', {name: whisperName, creatorKey, currentTime});
+  const expiration = useQuery(api.readExpiration.default, {name: whisperName, creatorKey, currentTime});
   const [expirationText, setExpirationText] = useState<string>('');
   const [isExpired, setIsExpired] = useState<boolean>(false);
-  const expireNow = useMutation('expireNow');
+  const expireNow = useMutation(api.expireNow.default);
   useEffect(() => {
     if (expiration === undefined) {
       return;
