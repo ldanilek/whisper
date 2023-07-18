@@ -54,7 +54,7 @@ const SecretDisplay = ({name, accessKey, password}: {name: string, accessKey: st
   }
   let decryptedSecret: string = CryptoJS.AES.decrypt(encryptedSecret, password).toString(CryptoJS.enc.Utf8);
   const attachments = [];
-  for (let [storageId, url] of Array.from(storageURLs.entries())) {
+  for (let [storageId, url] of Object.entries(storageURLs)) {
     const matches = decryptedSecret.match(new RegExp(`Attachment: '[0-9a-fA-F]*' ${storageId}`)) ?? [];
     for (let match of matches) {
       let filenameHex = match.match(/'[0-9a-fA-F]*'/)![0];

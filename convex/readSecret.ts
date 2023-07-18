@@ -7,7 +7,7 @@ export default query(async ({ db, storage },
   {whisperName: string,
   accessKey: string,
   passwordHash: string},
-): Promise<{encryptedSecret: string, storageURLs: Map<string, string | null>}> => {
+): Promise<{encryptedSecret: string, storageURLs: Record<string, string | null>}> => {
   const whisperDoc = await getValidWhisper(db, whisperName, false);
   if (!timingSafeEqual(whisperDoc.passwordHash, passwordHash)) {
     throw Error('incorrect password');
@@ -26,6 +26,6 @@ export default query(async ({ db, storage },
   ));
   return {
     encryptedSecret: whisperDoc.encryptedSecret,
-    storageURLs: new Map(storageURLs),
+    storageURLs: Object.fromEntries(storageURLs),
   };
 })
