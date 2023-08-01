@@ -135,10 +135,17 @@ class ExpirationWrapper extends React.Component<ExpirationWrapperProps, Expirati
   }
 
   render() {
-    if (this.props.inputError || this.state.caughtError) {
-      if (this.props.inputError) {
-        console.error(this.props.inputError);
-      }
+    if (this.state.caughtError) {
+      console.error(this.state.caughtError);
+      // Avoid loops in case ExpirationDisplay is throwing "invalid password" errors.
+      return (
+        <Whisper>
+          <div>No. Try again.</div>
+        </Whisper>
+      );
+    }
+    if (this.props.inputError) {
+      console.error(this.props.inputError);
       return (
         <Whisper>
           <ExpirationDisplay whisperName={this.props.whisperName} passwordHash={this.props.passwordHash} />
