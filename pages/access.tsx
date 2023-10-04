@@ -75,7 +75,7 @@ const SecretDisplay = ({name, accessKey, password}: {name: string, accessKey: st
 }
 
 
-const getGeolocation = async () => {
+const getGeolocation = async (): Promise<string | null> => {
   if (!navigator.geolocation) {
     return null;
   }
@@ -169,6 +169,7 @@ const AccessPage: NextPage = ({accessKey, accessError}: any) => {
   const [name, setName] = useState<string | undefined>(undefined);
   const [password, setPassword] = useState<string | undefined>(undefined);
   const recordGeolocation = useMutation(api.recordAccessGeolocation.default);
+  const recordGeolocationForFailure = useMutation(api.recordAccessGeolocation.forFailure);
   const [inputPassword, setInputPassword] = useState<string>('');
   const [error, setError] = useState<string>(accessError);
   useEffect(() => {
@@ -181,9 +182,14 @@ const AccessPage: NextPage = ({accessKey, accessError}: any) => {
     }
     if (password && !accessError) {
       getGeolocation().then((position) => {
-        recordGeolocation({whisperName: name, accessKey, geolocation: position as string | null, passwordHash: hashPassword(password)}).catch((err) => {
+        recordGeolocation({whisperName: name, accessKey, geolocation: position, passwordHash: hashPassword(password)}).catch((err) => {
           setError(err.toString());
         })
+      });
+    }
+    if (accessError) {
+      getGeolocation().then((position) => {
+        recordGeolocationForFailure({whisperName: name, accessKey, geolocation: position}).catch((err) => console.error(err));
       });
     }
   }, [router]);

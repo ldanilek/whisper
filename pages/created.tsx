@@ -35,29 +35,71 @@ const AccessLog = ({whisperName, creatorKey}: {whisperName: string, creatorKey: 
       null :
       <div><button className={styles.button} onClick={() => expireNow({whisperName, creatorKey})}>Expire Now</button></div>
     }
-    {accessDocs.map((accessDoc) =>
-      <div key={accessDoc._id} className={styles.accessLogEntry}>
-        {(new Date(accessDoc._creationTime)).toString()}
-        {accessDoc.geolocation ? ' at ' + accessDoc.geolocation : null}
-        {accessDoc.ip ? ' from ' + accessDoc.ip : null}
-      </div>
-    )}
+    <table className={styles.accessLogTable}>
+      <thead>
+        <tr>
+          <td>Access time</td>
+          <td>Location</td>
+          <td>IP</td>
+        </tr>
+      </thead>
+      <tbody>
+        {accessDocs.map((accessDoc) =>
+          <tr key={accessDoc._id}>
+            <td className={styles.accessLogEntry}>{(new Date(accessDoc._creationTime)).toLocaleString()}</td>
+            <td className={styles.accessLogEntry}><Location geolocation={accessDoc.geolocation} /></td>
+            <td className={styles.accessLogEntry}>{accessDoc.ip}</td>
+          </tr>
+        )}
+      </tbody>
+    </table>
     {
       accessFailureDocs.length ?
       <><p>Failed access attempts</p>
-      {
-        accessFailureDocs.map((accessFailureDoc) =>
-          <div key={accessFailureDoc._id} className={styles.accessLogEntry}>
-            {(new Date(accessFailureDoc._creationTime)).toString()}
-            <strong>{ ' ' + accessFailureDoc.reason}</strong>
-            {accessFailureDoc.ip ? ' from ' + accessFailureDoc.ip : null}
-          </div>
-        )
-      }
+      <table className={styles.accessLogTable}>
+        <thead>
+          <tr>
+            <td>Failure reason</td>
+            <td>Time</td>
+            <td>Location</td>
+            <td>IP</td>
+          </tr>
+        </thead>
+        <tbody>
+        {
+          accessFailureDocs.map((accessFailureDoc) =>
+            <tr key={accessFailureDoc._id}>
+              <td className={styles.accessLogEntry}>{accessFailureDoc.reason}</td>
+              <td className={styles.accessLogEntry}>{new Date(accessFailureDoc._creationTime).toLocaleString()}</td>
+              <td className={styles.accessLogEntry}><Location geolocation={accessFailureDoc.geolocation} /></td>
+              <td className={styles.accessLogEntry}>{accessFailureDoc.ip}</td>
+            </tr>
+          )
+        }
+        </tbody>
+      </table>
       </>
       : null
     }
   </div>);
+};
+
+const Location = ({geolocation}: {geolocation?: string | null}) => {
+  if (!geolocation) {
+    return null;
+  }
+  const regex = /Latitude\s+([\d.-]+),\s*Longitude\s+([\d.-]+)/;
+  const matches = geolocation.match(regex);
+  if (!matches) {
+    return null;
+  }
+
+  const latitude = matches[1];
+  const longitude = matches[2];
+  
+  return <a target='_blank' rel="noopener noreferrer"
+    href={`https://maps.google.com/?q=${latitude},${longitude}`}
+  >{geolocation}</a>;
 };
 
 const Copiable = ({text}: {text: string}) => {

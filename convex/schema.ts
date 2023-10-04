@@ -26,8 +26,11 @@ export default defineSchema({
     .index('by_name_and_creation', ['name']),
   accessFailures: defineTable({
     name: v.string(),
+    accessKey: v.string(),
     reason: v.string(),
+    geolocation: v.union(v.string(), v.null()),
     ip: v.union(v.string(), v.null()),
   })
+    .index('by_name_and_key', ['name', 'accessKey'])
     .index('by_name_and_creation', ['name']),
 })

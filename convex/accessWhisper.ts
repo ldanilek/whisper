@@ -28,7 +28,9 @@ export default mutation({
       if (e instanceof ConvexError) {
         await db.insert('accessFailures', {
           name: whisperName,
+          accessKey,
           reason: e.data,
+          geolocation: null,
           ip,
         });
         return e.data;
