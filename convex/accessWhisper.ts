@@ -1,7 +1,7 @@
 import { mutation } from './_generated/server';
 import { getValidWhisper, scheduleDeletion } from '../expiration';
 import { timingSafeEqual } from './security';
-import { v } from 'convex/values';
+import { ConvexError, v } from 'convex/values';
 
 export default mutation({
   args: {
@@ -15,13 +15,25 @@ export default mutation({
     { db, scheduler },
     { whisperName, passwordHash, accessKey, ip, ssrKey }
   ) => {
-    // @ts-ignore process global doesn't typecheck.
-    if (!ssrKey || !timingSafeEqual(ssrKey, process.env.SSR_KEY)) {
-      throw Error('must be called from an authorized server');
-    }
-    const whisperDoc = await getValidWhisper(db, whisperName, true);
-    if (!timingSafeEqual(whisperDoc.passwordHash, passwordHash)) {
-      throw Error('incorrect password');
+    let whisperDoc;
+    try {
+      if (!ssrKey || !timingSafeEqual(ssrKey, process.env.SSR_KEY!)) {
+        throw new ConvexError('must be called from an authorized server');
+      }
+      whisperDoc = await getValidWhisper(db, whisperName, true);
+      if (!timingSafeEqual(whisperDoc.passwordHash, passwordHash)) {
+        throw new ConvexError('incorrect password');
+      }
+    } catch (e: unknown) {
+      if (e instanceof ConvexError) {
+        await db.insert('accessFailures', {
+          name: whisperName,
+          reason: e.data,
+          ip,
+        });
+        return e.data;
+      }
+      throw e;
     }
     await db.insert('accesses', {
       name: whisperName,

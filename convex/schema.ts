@@ -24,4 +24,10 @@ export default defineSchema({
   })
     .index('by_name_and_key', ['name', 'accessKey'])
     .index('by_name_and_creation', ['name']),
+  accessFailures: defineTable({
+    name: v.string(),
+    reason: v.string(),
+    ip: v.union(v.string(), v.null()),
+  })
+    .index('by_name', ['name']),
 })

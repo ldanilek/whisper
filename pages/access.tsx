@@ -2,13 +2,14 @@ import type { GetServerSideProps, NextPage } from 'next'
 import styles from '../styles/Home.module.css'
 import { useQuery, useMutation } from 'convex/react'
 import { useState, useEffect } from 'react'
-import { accessWhisper, hashPassword } from '../common'
+import { hashPassword } from '../common'
 import { useRouter } from 'next/router'
 import Whisper from '../whisper'
 import React from 'react'
 import { ConvexHttpClient } from 'convex/browser'
 import { api } from '../convex/_generated/api'
 var CryptoJS = require("crypto-js");
+var uuid = require("uuid");
 
 
 const Attachment = ({url, filename, password}: {url: string | null, filename: string, password: string}) => {
@@ -232,19 +233,18 @@ export const getServerSideProps: GetServerSideProps = async ({req}) => {
     return { props: {accessKey: null, accessError: null} };
   }
   const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
-  let accessKey = null;
-  let accessError = null;
   if (!process.env.SSR_KEY) {
     throw new Error('need SSR_KEY');
   }
-  await accessWhisper(name, password, ip, ((args: any) => convex.mutation(api.accessWhisper.default, args)) as any).then(
-    (k) => {
-      accessKey = k;
-    },
-    (e) => {
-      accessError = e.toString();
-    },
-  );
+  const accessKey = uuid.v4();
+  const passwordHash = hashPassword(password);
+  const accessError = await convex.mutation(api.accessWhisper.default, {
+    whisperName: name,
+    passwordHash,
+    accessKey,
+    ip,
+    ssrKey: process.env.SSR_KEY!,
+  });
   return { props: {accessKey, accessError} };
 }
 

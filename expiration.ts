@@ -2,6 +2,7 @@ import { Scheduler } from "convex/server";
 import { Doc } from "./convex/_generated/dataModel";
 import { DatabaseReader } from "./convex/_generated/server";
 import { api } from "./convex/_generated/api";
+import { ConvexError } from "convex/values";
 
 export const expirationOptions = [
     'after one access',
@@ -67,15 +68,15 @@ export async function getValidWhisper(
   if (expiration.never) {
     return whisperDoc!;
   } else if (expiration.manual) {
-    throw Error(`manually expired`);
+    throw new ConvexError(`manually expired`);
   } else if (expiration.afterAccessCount) {
     if (newAccess && await countAccesses(db, name) >= expiration.afterAccessCount) {
-      throw Error(`already accessed ${expiration.afterAccessCount} time${expiration.afterAccessCount === 1 ? '' : 's'}`);
+      throw new ConvexError(`already accessed ${expiration.afterAccessCount} time${expiration.afterAccessCount === 1 ? '' : 's'}`);
     }
   } else if (expiration.afterDuration) {
       const after = creation + expiration.afterDuration;
       if (after < new Date().getTime()) {
-        throw Error(`expired after ${printDuration(expiration.afterDuration)}`);
+        throw new ConvexError(`expired after ${printDuration(expiration.afterDuration)}`);
       }
   } else {
     throw Error('developer error');

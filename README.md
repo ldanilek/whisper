@@ -60,4 +60,3 @@ and the recipient may notice that the secret has pre-emptively expired.
 - Max password retries
 - Display secret as plaintext for easy copying
 - Download secret as txt file
-- if argument validation fails, it says "will expire" ??
