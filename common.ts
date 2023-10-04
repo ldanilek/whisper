@@ -84,9 +84,6 @@ export async function accessWhisper(
 ): Promise<string> {
     const accessKey = uuid.v4();
     const passwordHash = hashPassword(password);
-    if (!process.env.SSR_KEY) {
-      throw new Error('need SSR_KEY');
-    }
     await mutation({whisperName: name, passwordHash, accessKey, ip, ssrKey: process.env.SSR_KEY!});
     return accessKey;
 }

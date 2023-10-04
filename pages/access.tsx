@@ -234,6 +234,9 @@ export const getServerSideProps: GetServerSideProps = async ({req}) => {
   const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
   let accessKey = null;
   let accessError = null;
+  if (!process.env.SSR_KEY) {
+    throw new Error('need SSR_KEY');
+  }
   await accessWhisper(name, password, ip, ((args: any) => convex.mutation(api.accessWhisper.default, args)) as any).then(
     (k) => {
       accessKey = k;
