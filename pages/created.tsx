@@ -46,13 +46,13 @@ const AccessLog = ({whisperName, creatorKey}: {whisperName: string, creatorKey: 
       accessFailureDocs.length ?
       <><p>Failed access attempts</p>
       {
-        accessFailureDocs.map((accessFailureDoc) => {
+        accessFailureDocs.map((accessFailureDoc) =>
           <div key={accessFailureDoc._id} className={styles.accessLogEntry}>
             {(new Date(accessFailureDoc._creationTime)).toString()}
             <strong>{ ' ' + accessFailureDoc.reason}</strong>
             {accessFailureDoc.ip ? ' from ' + accessFailureDoc.ip : null}
           </div>
-        })
+        )
       }
       </>
       : null
