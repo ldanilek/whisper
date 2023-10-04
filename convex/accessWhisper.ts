@@ -9,7 +9,7 @@ export default mutation({
     passwordHash: v.string(),
     accessKey: v.string(),
     ip: v.union(v.string(), v.null()), // from HTTP handler, to impede spoofing
-    ssrKey: v.string(), // can only be called from authorized servers
+    ssrKey: v.optional(v.any()), // can only be called from authorized servers
   },
   handler: async (
     { db, scheduler },
