@@ -86,7 +86,7 @@
 .accessLogTable {
   border: 1px solid gray;
   border-radius: 10px;
-  margin: 2rem 0;
+  margin: 2rem;
 }
 
 .accessLogEntry {
