@@ -110,11 +110,10 @@ const ExpirationDisplay = ({whisperName, passwordHash}: {whisperName: string, pa
       setExpirationText(newExpirationText);
     }
   }, [expiration]);
-  if (!expirationText) {
-    return <div className={styles.description}>Loading...</div>;
-  }
   return (
-    <div className={styles.description}>{expirationText}</div>
+    <div className={styles.description}>
+      {expirationText ? expirationText : "Loading..."}
+    </div>
   );
 };
 

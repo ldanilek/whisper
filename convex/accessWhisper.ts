@@ -1,5 +1,11 @@
-import { mutation } from './_generated/server';
-import { getValidWhisper, scheduleDeletion } from '../expiration';
+import { DatabaseWriter, mutation } from './_generated/server';
+import {
+  countInvalidAccesses,
+  failedAccesses,
+  getValidWhisper,
+  maxAccessFailures,
+  scheduleDeletion,
+} from '../expiration';
 import { timingSafeEqual } from './security';
 import { ConvexError, v } from 'convex/values';
 
@@ -26,13 +32,7 @@ export default mutation({
       }
     } catch (e: unknown) {
       if (e instanceof ConvexError) {
-        await db.insert('accessFailures', {
-          name: whisperName,
-          accessKey,
-          reason: e.data,
-          geolocation: null,
-          ip,
-        });
+        await registerAccessFailure(db, whisperName, e.data, accessKey, ip);
         return e.data;
       }
       throw e;
@@ -46,3 +46,30 @@ export default mutation({
     await scheduleDeletion(scheduler, db, whisperName, whisperDoc.creatorKey);
   },
 });
+
+const registerAccessFailure = async (
+  db: DatabaseWriter,
+  whisperName: string,
+  reason: string,
+  accessKey: string,
+  ip: string | null
+) => {
+  await db.insert('accessFailures', {
+    name: whisperName,
+    accessKey,
+    reason,
+    geolocation: null,
+    ip,
+  });
+  const accessFailures = await countInvalidAccesses(db, whisperName);
+  if (accessFailures >= maxAccessFailures) {
+    try {
+      const whisperDoc = await getValidWhisper(db, whisperName, true);
+      await db.patch(whisperDoc._id, {
+        expiration: failedAccesses,
+      });
+    } catch (e: unknown) {
+      // if the whisper has already expired, we're done.
+    }
+  }
+};
