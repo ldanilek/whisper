@@ -1,38 +1,34 @@
-import { mutation } from './_generated/server'
-import { getValidWhisper, scheduleDeletion } from '../expiration'
-import { timingSafeEqual } from './security'
+import { mutation } from './_generated/server';
+import { getValidWhisper, scheduleDeletion } from '../expiration';
+import { timingSafeEqual } from './security';
+import { v } from 'convex/values';
 
-export default mutation(
-  async (
+export default mutation({
+  args: {
+    whisperName: v.string(),
+    passwordHash: v.string(),
+    accessKey: v.string(),
+    ip: v.union(v.string(), v.null()), // from HTTP handler, to impede spoofing
+    ssrKey: v.string(), // can only be called from authorized servers
+  },
+  handler: async (
     { db, scheduler },
-    {
-      whisperName,
-      passwordHash,
-      accessKey,
-      ip,
-      ssrKey,
-    }: {
-      whisperName: string
-      passwordHash: string
-      accessKey: string
-      ip: string | null // from HTTP handler, to impede spoofing
-      ssrKey: string
-    } // can only be called from authorized servers
+    { whisperName, passwordHash, accessKey, ip, ssrKey }
   ) => {
     // @ts-ignore process global doesn't typecheck.
     if (!ssrKey || !timingSafeEqual(ssrKey, process.env.SSR_KEY)) {
-      throw Error('must be called from an authorized server')
+      throw Error('must be called from an authorized server');
     }
-    const whisperDoc = await getValidWhisper(db, whisperName, true)
+    const whisperDoc = await getValidWhisper(db, whisperName, true);
     if (!timingSafeEqual(whisperDoc.passwordHash, passwordHash)) {
-      throw Error('incorrect password')
+      throw Error('incorrect password');
     }
     await db.insert('accesses', {
       name: whisperName,
       accessKey,
       geolocation: null,
       ip,
-    })
-    await scheduleDeletion(scheduler, db, whisperName, whisperDoc.creatorKey)
-  }
-)
+    });
+    await scheduleDeletion(scheduler, db, whisperName, whisperDoc.creatorKey);
+  },
+});
