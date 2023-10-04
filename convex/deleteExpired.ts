@@ -1,15 +1,17 @@
 import { mutation } from './_generated/server'
 import { whenShouldDelete, scheduleDeletion } from '../expiration'
 import { timingSafeEqual } from './security';
+import { ConvexError, v } from 'convex/values';
 
-export default mutation(
-  async ({ db, scheduler, storage }, {whisperName, creatorKey}: {whisperName: string, creatorKey: string}): Promise<void> => {
+export default mutation({
+  args: {whisperName: v.string(), creatorKey: v.string()},
+  handler: async ({ db, scheduler, storage }, {whisperName, creatorKey}): Promise<void> => {
     const whisperDoc = await db
       .query('whispers')
       .withIndex('by_name', q => q.eq('name', whisperName))
       .unique();
     if (!timingSafeEqual(whisperDoc!.creatorKey, creatorKey)) {
-      throw Error('invalid creator key');
+      throw new ConvexError('invalid creator key');
     }
     const toDelete = await whenShouldDelete(db, whisperName);
     if (!toDelete) {
@@ -27,7 +29,7 @@ export default mutation(
           encryptedSecret: "",
         })
       ];
-      for (let storageId of whisperDoc!.storageIds ?? []) {
+      for (const storageId of whisperDoc!.storageIds ?? []) {
         promises.push(storage.delete(storageId));
       }
       await Promise.all(promises);
@@ -35,5 +37,5 @@ export default mutation(
       // Schedule to delete when it will expire.
       await scheduleDeletion(scheduler, db, whisperName, creatorKey);
     }
-  }
-)
+  },
+});

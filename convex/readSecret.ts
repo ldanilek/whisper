@@ -1,6 +1,7 @@
 import { query } from './_generated/server'
 import { getValidWhisper } from '../expiration';
 import { timingSafeEqual } from './security';
+import { ConvexError } from 'convex/values';
 
 export default query(async ({ db, storage },
   {whisperName, accessKey, passwordHash}:
@@ -10,7 +11,7 @@ export default query(async ({ db, storage },
 ): Promise<{encryptedSecret: string, storageURLs: Record<string, string | null>}> => {
   const whisperDoc = await getValidWhisper(db, whisperName, false);
   if (!timingSafeEqual(whisperDoc.passwordHash, passwordHash)) {
-    throw Error('incorrect password');
+    throw new ConvexError('incorrect password');
   }
   const accessDoc = await db
     .query('accesses')

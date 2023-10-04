@@ -141,7 +141,8 @@ class ExpirationWrapper extends React.Component<ExpirationWrapperProps, Expirati
       // Avoid loops in case ExpirationDisplay is throwing "invalid password" errors.
       return (
         <Whisper>
-          <div>No. Try again.</div>
+          <div>{this.state.caughtError}</div>
+          <div>Try again.</div>
         </Whisper>
       );
     }
@@ -159,7 +160,11 @@ class ExpirationWrapper extends React.Component<ExpirationWrapperProps, Expirati
   // This is why it needs to be a class component.
   static getDerivedStateFromError(error: any) {
     console.log('getDerivedStateFromError');
-    return {caughtError: error.toString()};
+    let caughtError = error.data;
+    if (!caughtError) {
+      caughtError = 'ERROR';
+    }
+    return {caughtError};
   }
 }
 

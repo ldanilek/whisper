@@ -1,6 +1,7 @@
 import { query } from './_generated/server'
 import { readExpiration } from '../expiration';
 import { timingSafeEqual } from './security';
+import { ConvexError } from 'convex/values';
 
 // Returns description of when the whisper expires, and a timestamp of when to next check.
 // Input currentTime invalidates the cache.
@@ -10,7 +11,7 @@ export default query(async ({ db }, {name, creatorKey, currentTime}: {name: stri
     .withIndex('by_name', q => q.eq('name', name))
     .unique();
   if (!timingSafeEqual(whisperDoc!.creatorKey, creatorKey)) {
-    throw Error('invalid creator key');
+    throw new ConvexError('invalid creator key');
   }
   return readExpiration(db, name);
 });
