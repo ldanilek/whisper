@@ -14,6 +14,7 @@ const AccessLog = ({whisperName, creatorKey}: {whisperName: string, creatorKey: 
   const [expirationText, setExpirationText] = useState<string>('');
   const [isExpired, setIsExpired] = useState<boolean>(false);
   const expireNow = useMutation(api.expireNow.default);
+  const accessFailureDocs = useQuery(api.readAccessLog.failures, {name: whisperName, creatorKey}) || [];
   useEffect(() => {
     if (expiration === undefined) {
       return;
@@ -35,12 +36,27 @@ const AccessLog = ({whisperName, creatorKey}: {whisperName: string, creatorKey: 
       <div><button className={styles.button} onClick={() => expireNow({whisperName, creatorKey})}>Expire Now</button></div>
     }
     {accessDocs.map((accessDoc) =>
-      <div key={accessDoc._id.toString()} className={styles.accessLogEntry}>
+      <div key={accessDoc._id} className={styles.accessLogEntry}>
         {(new Date(accessDoc._creationTime)).toString()}
         {accessDoc.geolocation ? ' at ' + accessDoc.geolocation : null}
         {accessDoc.ip ? ' from ' + accessDoc.ip : null}
       </div>
     )}
+    {
+      accessFailureDocs.length ?
+      <><p>Failed access attempts</p>
+      {
+        accessFailureDocs.map((accessFailureDoc) => {
+          <div key={accessFailureDoc._id} className={styles.accessLogEntry}>
+            {(new Date(accessFailureDoc._creationTime)).toString()}
+            <strong>{ ' ' + accessFailureDoc.reason}</strong>
+            {accessFailureDoc.ip ? ' from ' + accessFailureDoc.ip : null}
+          </div>
+        })
+      }
+      </>
+      : null
+    }
   </div>);
 };
 

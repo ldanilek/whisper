@@ -29,5 +29,5 @@ export default defineSchema({
     reason: v.string(),
     ip: v.union(v.string(), v.null()),
   })
-    .index('by_name', ['name']),
+    .index('by_name_and_creation', ['name']),
 })
