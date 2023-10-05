@@ -56,7 +56,5 @@ and the recipient may notice that the secret has pre-emptively expired.
 
 # TODO
 
-- Record access attempt failures (with reason) and display them
-- Max password retries
 - Display secret as plaintext for easy copying
 - Download secret as txt file
