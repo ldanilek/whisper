@@ -59,6 +59,22 @@ export async function countAccesses(
   return allAccesses.length;
 }
 
+export async function latestAccessTime(
+  db: DatabaseReader,
+  name: string
+): Promise<number> {
+  const allAccesses = await db
+    .query('accesses')
+    .withIndex('by_name_and_key', (q) => q.eq('name', name))
+    .collect();
+  const largestCreationTime = Math.max(
+    ...allAccesses.map((access) => {
+      return access._creationTime;
+    })
+  );
+  return largestCreationTime;
+}
+
 export async function countInvalidAccesses(
   db: DatabaseReader,
   name: string
@@ -173,7 +189,8 @@ export async function whenShouldDelete(
     if (accesses >= expiration.afterAccessCount) {
       // In case the new access caused the secret to expire, give everyone with
       // access keys a day to readSecret, then delete it.
-      return new Date(currentTime + 24 * 60 * 60 * 1000);
+      const lastAccessTime = await latestAccessTime(db, name);
+      return new Date(lastAccessTime + 24 * 60 * 60 * 1000);
     } else {
       return null;
     }
