@@ -1,5 +1,4 @@
 import { query } from './_generated/server'
-import { Doc } from './_generated/dataModel';
 import { timingSafeEqual } from './security';
 import { ConvexError, v } from 'convex/values';
 

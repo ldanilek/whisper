@@ -122,12 +122,12 @@ const Created: NextPage = () => {
   const [creatorKey, setCreatorKey] = useState<string | undefined>(undefined);
   const [password, setPassword] = useState<string | undefined>(undefined);
   useEffect(() => {
-    let name = router.query['name'] as string;
-    let password = router.query['password'] as string;
-    let creatorKey = router.query['creatorKey'] as string;
-    setName(name);
-    setCreatorKey(creatorKey);
-    setPassword(password);
+    const nameParam = router.query['name'] as string;
+    const passwordParam = router.query['password'] as string;
+    const creatorKeyParam = router.query['creatorKey'] as string;
+    setName(nameParam);
+    setCreatorKey(creatorKeyParam);
+    setPassword(passwordParam);
   }, [router]);
 
   return (

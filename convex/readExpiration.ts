@@ -7,7 +7,7 @@ import { ConvexError, v } from 'convex/values';
 // Input currentTime invalidates the cache.
 export default query({
   args: {name: v.string(), creatorKey: v.string(), currentTime: v.number()},
-  handler: async ({ db }, {name, creatorKey, currentTime}) => {
+  handler: async ({ db }, {name, creatorKey}) => {
     const whisperDoc = await db
       .query('whispers')
       .withIndex('by_name', q => q.eq('name', name))

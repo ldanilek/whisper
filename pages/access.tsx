@@ -8,8 +8,8 @@ import Whisper from '../whisper'
 import React from 'react'
 import { ConvexHttpClient } from 'convex/browser'
 import { api } from '../convex/_generated/api'
-var CryptoJS = require("crypto-js");
-var uuid = require("uuid");
+import CryptoJS from 'crypto-js'
+import { v4 as uuidv4 } from 'uuid'
 
 
 const Attachment = ({url, filename, password}: {url: string | null, filename: string, password: string}) => {
@@ -25,9 +25,10 @@ const Attachment = ({url, filename, password}: {url: string | null, filename: st
       const decrypted = CryptoJS.AES.decrypt(encrypted, password);
       const decryptedStr = decrypted.toString(CryptoJS.enc.Utf8); // this is also base64
       const decoded = Buffer.from(decryptedStr, 'base64');
-      var blob = new Blob([decoded]);
+      const blob = new Blob([decoded]);
       setFileBlob(blob);
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [url, filename]);
   if (url === null) {
     return <span><br />{`missing attachment '${filename}'`}</span>;
@@ -55,9 +56,9 @@ const SecretDisplay = ({name, accessKey, password}: {name: string, accessKey: st
   }
   let decryptedSecret: string = CryptoJS.AES.decrypt(encryptedSecret, password).toString(CryptoJS.enc.Utf8);
   const attachments = [];
-  for (let [storageId, url] of Object.entries(storageURLs)) {
+  for (const [storageId, url] of Object.entries(storageURLs)) {
     const matches = decryptedSecret.match(new RegExp(`Attachment: '[0-9a-fA-F]*' ${storageId}`)) ?? [];
-    for (let match of matches) {
+    for (const match of matches) {
       let filenameHex = match.match(/'[0-9a-fA-F]*'/)![0];
       filenameHex = filenameHex.slice(1, filenameHex.length-1);
       const filename = Buffer.from(filenameHex, 'hex').toString();
@@ -85,7 +86,7 @@ const getGeolocation = async (): Promise<string | null> => {
         const positionString = `Latitude ${position.coords.latitude.toFixed(3)}, Longitude ${position.coords.longitude.toFixed(3)}`;
         resolve(positionString);
       },
-      (error) => {
+      () => {
         resolve(null);
       },
     );
@@ -100,7 +101,7 @@ const ExpirationDisplay = ({whisperName, passwordHash}: {whisperName: string, pa
     if (expiration === undefined) {
       return;
     }
-    const [newExpirationText, refresh, _] = expiration;
+    const [newExpirationText, refresh] = expiration;
     if (refresh) {
       setTimeout(() => {
         setCurrentTime(new Date().getTime());
@@ -121,7 +122,7 @@ type ExpirationWrapperProps = {
   whisperName: string,
   passwordHash: string,
   inputError: string;
-  children?: any;
+  children?: React.ReactNode;
 };
 
 type ExpirationWrapperState = {
@@ -157,7 +158,7 @@ class ExpirationWrapper extends React.Component<ExpirationWrapperProps, Expirati
   }
 
   // This is why it needs to be a class component.
-  static getDerivedStateFromError(error: any) {
+  static getDerivedStateFromError(error: { data?: string }) {
     console.log('getDerivedStateFromError');
     let caughtError = error.data;
     if (!caughtError) {
@@ -168,7 +169,7 @@ class ExpirationWrapper extends React.Component<ExpirationWrapperProps, Expirati
 }
 
 
-const AccessPage: NextPage = ({accessKey, accessError}: any) => {
+const AccessPage: NextPage<{accessKey: string, accessError: string}> = ({accessKey, accessError}) => {
   const router = useRouter();
   const [name, setName] = useState<string | undefined>(undefined);
   const [password, setPassword] = useState<string | undefined>(undefined);
@@ -177,25 +178,26 @@ const AccessPage: NextPage = ({accessKey, accessError}: any) => {
   const [inputPassword, setInputPassword] = useState<string>('');
   const [error, setError] = useState<string>(accessError);
   useEffect(() => {
-    let password = router.query['password'] as string;
-    setPassword(password);
-    let name = router.query['name'] as string;
-    setName(name);
-    if (name === undefined) {
+    const passwordParam = router.query['password'] as string;
+    setPassword(passwordParam);
+    const nameParam = router.query['name'] as string;
+    setName(nameParam);
+    if (nameParam === undefined) {
       return;
     }
-    if (password && !accessError) {
+    if (passwordParam && !accessError) {
       getGeolocation().then((position) => {
-        recordGeolocation({whisperName: name, accessKey, geolocation: position, passwordHash: hashPassword(password)}).catch((err) => {
+        recordGeolocation({whisperName: nameParam, accessKey, geolocation: position, passwordHash: hashPassword(passwordParam)}).catch((err) => {
           setError(err.toString());
         })
       });
     }
     if (accessError) {
       getGeolocation().then((position) => {
-        recordGeolocationForFailure({whisperName: name, accessKey, geolocation: position}).catch((err) => console.error(err));
+        recordGeolocationForFailure({whisperName: nameParam, accessKey, geolocation: position}).catch((err) => console.error(err));
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
   if (error) {
@@ -236,7 +238,7 @@ export const getServerSideProps: GetServerSideProps = async ({req}) => {
     return { props: {ip: null} };
   }
   const ip = req.headers["x-real-ip"] as string || req.socket.remoteAddress || null;
-  let url = new URL(req.url!, `http://${req.headers.host}`);
+  const url = new URL(req.url!, `http://${req.headers.host}`);
   const name = url.searchParams.get('name')!;
   const password = url.searchParams.get('password')!;
   if (!password) {
@@ -246,7 +248,7 @@ export const getServerSideProps: GetServerSideProps = async ({req}) => {
   if (!process.env.SSR_KEY) {
     throw new Error('need SSR_KEY');
   }
-  const accessKey = uuid.v4();
+  const accessKey = uuidv4();
   const passwordHash = hashPassword(password);
   const accessError = await convex.mutation(api.accessWhisper.default, {
     whisperName: name,
