@@ -1,10 +1,10 @@
 import { convexTest } from 'convex-test';
 import { test, expect } from 'vitest';
-import { api } from './_generated/api';
-import schema from './schema';
+import { api } from './convex/_generated/api';
+import schema from './convex/schema';
 
 // @ts-expect-error import.meta.glob types
-export const modules = import.meta.glob('./**/!(*.*.*)*.*s');
+export const modules = import.meta.glob('./convex/**/!(*.*.*)*.*s');
 
 process.env.SSR_KEY = 'test-ssr-key';
 
