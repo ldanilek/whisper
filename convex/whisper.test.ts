@@ -3,7 +3,7 @@ import { test, expect } from "vitest";
 import { api } from "./_generated/api";
 import schema from "./schema";
 
-// @ts-ignore
+// @ts-expect-error
 export const modules = import.meta.glob("./**/!(*.*.*)*.*s");
 
 process.env.SSR_KEY = 'test-ssr-key';
