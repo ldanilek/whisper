@@ -91,6 +91,7 @@ const SecretDisplay = ({
   ).toString(CryptoJS.enc.Utf8);
   const attachments = [];
   for (const [storageId, url] of Object.entries(storageURLs)) {
+    console.log('storageURL', url);
     const matches =
       decryptedSecret.match(
         new RegExp(`Attachment: '[0-9a-fA-F]*' ${storageId}`)
