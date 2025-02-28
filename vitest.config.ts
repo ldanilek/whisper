@@ -5,4 +5,4 @@ export default defineConfig({
     environment: 'node',
     include: ['**/*.test.ts'],
   },
-}); 
+});

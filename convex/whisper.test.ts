@@ -1,17 +1,16 @@
-import { convexTest } from "convex-test";
-import { test, expect } from "vitest";
-import { api } from "./_generated/api";
-import schema from "./schema";
+import { convexTest } from 'convex-test';
+import { test, expect } from 'vitest';
+import { api } from './_generated/api';
+import schema from './schema';
 
-// @ts-expect-error
-export const modules = import.meta.glob("./**/!(*.*.*)*.*s");
+// @ts-expect-error import.meta.glob types
+export const modules = import.meta.glob('./**/!(*.*.*)*.*s');
 
 process.env.SSR_KEY = 'test-ssr-key';
 
-
 test('full whisper flow', async () => {
   const t = convexTest(schema, modules);
-  
+
   // Test data
   const whisperName = 'test-whisper';
   const encryptedSecret = 'encrypted-data';
@@ -19,7 +18,7 @@ test('full whisper flow', async () => {
   const creatorKey = 'creator123';
   const accessKey = 'access123';
   const expiration = 'after one access';
-  
+
   // Create whisper
   await t.mutation(api.createWhisper.default, {
     whisperName,
@@ -48,4 +47,4 @@ test('full whisper flow', async () => {
 
   expect(result.encryptedSecret).toBe(encryptedSecret);
   expect(result.storageURLs).toEqual({});
-}); 
+});
