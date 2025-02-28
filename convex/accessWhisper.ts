@@ -43,6 +43,7 @@ export default mutation({
       geolocation: null,
       ip,
     });
+    console.info(`whisper authorized access from ${ip}`);
     await scheduleDeletion(scheduler, db, whisperName, whisperDoc.creatorKey);
   },
 });
@@ -54,6 +55,7 @@ const registerAccessFailure = async (
   accessKey: string,
   ip: string | null
 ) => {
+  console.warn(`whisper unauthorized access from ${ip}: ${reason}`);
   await db.insert('accessFailures', {
     name: whisperName,
     accessKey,
