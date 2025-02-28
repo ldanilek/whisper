@@ -146,13 +146,13 @@ function splitBase(
 }
 
 function printDuration(duration: number): string {
-  let inBase = splitBase(duration, 'day', [
+  const inBase = splitBase(duration, 'day', [
     [24, 'hour'],
     [60, 'minute'],
     [60, 'second'],
     [1000, 'millisecond'],
   ]);
-  let asStrings = inBase
+  const asStrings = inBase
     .map(([count, name]) => {
       if (count === 0 || name === 'millisecond') {
         return '';

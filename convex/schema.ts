@@ -1,5 +1,5 @@
-import { defineSchema, defineTable } from 'convex/server'
-import { v } from 'convex/values'
+import { defineSchema, defineTable } from 'convex/server';
+import { v } from 'convex/values';
 
 export default defineSchema({
   whispers: defineTable({
@@ -33,4 +33,4 @@ export default defineSchema({
   })
     .index('by_name_and_key', ['name', 'accessKey'])
     .index('by_name_and_creation', ['name']),
-})
+});

@@ -3,7 +3,10 @@
   "scripts": {
     "dev": "concurrently 'next dev' 'convex dev'",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "format": "prettier --write .",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0 && prettier --check .",
+    "test": "vitest"
   },
   "dependencies": {
     "concurrently": "^7.6.0",
@@ -16,10 +19,19 @@
     "uuid": "^9.0.0"
   },
   "devDependencies": {
+    "@edge-runtime/vm": "^5.0.0",
+    "@types/crypto-js": "^4.2.2",
     "@types/node": "~18.15.3",
     "@types/react": "18.0.28",
     "@types/react-dom": "18.0.11",
+    "@types/uuid": "^10.0.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.1",
+    "@typescript-eslint/parser": "^7.0.1",
+    "convex-test": "^0.0.36",
+    "eslint": "^8.56.0",
+    "eslint-config-next": "^15.2.0",
     "prettier": "^2.8.4",
-    "typescript": "^5.0.2"
+    "typescript": "^5.0.2",
+    "vitest": "^1.2.2"
   }
 }
