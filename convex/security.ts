@@ -1,4 +1,3 @@
-
 // Attempt to prevent timing attacks when checking string equality
 // of password hashes, access keys, etc.
 // Timing does not depend on string characters (although it may depend on lengths).

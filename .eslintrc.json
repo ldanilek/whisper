@@ -7,9 +7,10 @@
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint"],
   "root": true,
+  "ignorePatterns": ["convex/_generated/*"],
   "env": {
     "browser": true,
     "es2021": true,
     "node": true
   }
-} 
+}

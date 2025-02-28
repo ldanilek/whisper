@@ -1,7 +1,7 @@
-import '../styles/globals.css'
-import type { AppProps } from 'next/app'
+import '../styles/globals.css';
+import type { AppProps } from 'next/app';
 
-import { ConvexProvider, ConvexReactClient } from 'convex/react'
+import { ConvexProvider, ConvexReactClient } from 'convex/react';
 const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 function MyApp({ Component, pageProps }: AppProps) {
@@ -9,7 +9,7 @@ function MyApp({ Component, pageProps }: AppProps) {
     <ConvexProvider client={convex}>
       <Component {...pageProps} />
     </ConvexProvider>
-  )
+  );
 }
 
-export default MyApp
+export default MyApp;
