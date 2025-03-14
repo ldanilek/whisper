@@ -339,7 +339,7 @@ export const getServerSideProps: GetServerSideProps<AccessPageProps> = async ({
   req,
 }) => {
   if (req === undefined) {
-    return { props: { ip: null } };
+    return { props: { ip: null, accessKey: null, accessError: null, requestGeolocation: false } };
   }
   const ip =
     (req.headers['x-real-ip'] as string) || req.socket.remoteAddress || null;
