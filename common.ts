@@ -25,7 +25,8 @@ export async function createWhisper(
   expiration: string,
   password: string,
   createWhisperMutation: ReactMutation<typeof api.createWhisper.default>,
-  makeUploadURL: ReactMutation<typeof api.fileUploadURL.default>
+  makeUploadURL: ReactMutation<typeof api.fileUploadURL.default>,
+  requestGeolocation: boolean
 ): Promise<CreateResponse> {
   const name = uuidv4();
   const creatorKey = uuidv4();
@@ -61,6 +62,7 @@ export async function createWhisper(
     passwordHash,
     creatorKey,
     expiration,
+    requestGeolocation,
   });
   return {
     password,

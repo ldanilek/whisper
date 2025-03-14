@@ -17,6 +17,10 @@ export default mutation({
     ip: v.union(v.string(), v.null()), // from HTTP handler, to impede spoofing
     ssrKey: v.optional(v.any()), // can only be called from authorized servers
   },
+  returns: {
+    accessError: v.union(v.string(), v.null()),
+    requestGeolocation: v.boolean(),
+  },
   handler: async (
     { db, scheduler },
     { whisperName, passwordHash, accessKey, ip, ssrKey }
@@ -33,7 +37,10 @@ export default mutation({
     } catch (e: unknown) {
       if (e instanceof ConvexError) {
         await registerAccessFailure(db, whisperName, e.data, accessKey, ip);
-        return e.data;
+        return {
+          accessError: e.data as string,
+          requestGeolocation: whisperDoc?.requestGeolocation ?? false,
+        };
       }
       throw e;
     }
@@ -45,6 +52,10 @@ export default mutation({
     });
     console.info(`whisper authorized access from ${ip}`);
     await scheduleDeletion(scheduler, db, whisperName, whisperDoc.creatorKey);
+    return {
+      accessError: null,
+      requestGeolocation: whisperDoc?.requestGeolocation ?? false,
+    };
   },
 });
 

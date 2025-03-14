@@ -176,7 +176,7 @@ const ExpirationDisplay = ({
 type ExpirationWrapperProps = {
   whisperName: string;
   passwordHash: string;
-  inputError: string;
+  inputError: string | null;
   children?: React.ReactNode;
 };
 
@@ -229,9 +229,16 @@ class ExpirationWrapper extends React.Component<
   }
 }
 
-const AccessPage: NextPage<{ accessKey: string; accessError: string }> = ({
+interface AccessPageProps {
+  accessKey: string | null;
+  accessError: string | null;
+  requestGeolocation: boolean;
+}
+
+const AccessPage: NextPage<AccessPageProps> = ({
   accessKey,
   accessError,
+  requestGeolocation,
 }) => {
   const router = useRouter();
   const [name, setName] = useState<string | undefined>(undefined);
@@ -241,7 +248,7 @@ const AccessPage: NextPage<{ accessKey: string; accessError: string }> = ({
     api.recordAccessGeolocation.forFailure
   );
   const [inputPassword, setInputPassword] = useState<string>('');
-  const [error, setError] = useState<string>(accessError);
+  const [error, setError] = useState<string | null>(accessError);
   useEffect(() => {
     const passwordParam = router.query['password'] as string;
     setPassword(passwordParam);
@@ -250,11 +257,11 @@ const AccessPage: NextPage<{ accessKey: string; accessError: string }> = ({
     if (nameParam === undefined) {
       return;
     }
-    if (passwordParam && !accessError) {
+    if (passwordParam && !accessError && requestGeolocation) {
       getGeolocation().then((position) => {
         recordGeolocation({
           whisperName: nameParam,
-          accessKey,
+          accessKey: accessKey!,
           geolocation: position,
           passwordHash: hashPassword(passwordParam),
         }).catch((err) => {
@@ -262,11 +269,11 @@ const AccessPage: NextPage<{ accessKey: string; accessError: string }> = ({
         });
       });
     }
-    if (accessError) {
+    if (accessError && requestGeolocation) {
       getGeolocation().then((position) => {
         recordGeolocationForFailure({
           whisperName: nameParam,
-          accessKey,
+          accessKey: accessKey!,
           geolocation: position,
         }).catch((err) => console.error(err));
       });
@@ -328,7 +335,9 @@ const AccessPage: NextPage<{ accessKey: string; accessError: string }> = ({
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async ({ req }) => {
+export const getServerSideProps: GetServerSideProps<AccessPageProps> = async ({
+  req,
+}) => {
   if (req === undefined) {
     return { props: { ip: null } };
   }
@@ -338,7 +347,7 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   const name = url.searchParams.get('name')!;
   const password = url.searchParams.get('password')!;
   if (!password) {
-    return { props: { accessKey: null, accessError: null } };
+    return { props: { accessKey: null, accessError: null, requestGeolocation: false } };
   }
   const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
   if (!process.env.SSR_KEY) {
@@ -346,14 +355,17 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   }
   const accessKey = uuidv4();
   const passwordHash = hashPassword(password);
-  const accessError = await convex.mutation(api.accessWhisper.default, {
-    whisperName: name,
-    passwordHash,
-    accessKey,
-    ip,
-    ssrKey: process.env.SSR_KEY!,
-  });
-  return { props: { accessKey, accessError } };
+  const { accessError, requestGeolocation } = await convex.mutation(
+    api.accessWhisper.default,
+    {
+      whisperName: name,
+      passwordHash,
+      accessKey,
+      ip,
+      ssrKey: process.env.SSR_KEY!,
+    }
+  );
+  return { props: { accessKey, accessError, requestGeolocation } };
 };
 
 export default AccessPage;

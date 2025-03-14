@@ -10,6 +10,7 @@ export default mutation({
     passwordHash: v.string(),
     creatorKey: v.string(),
     expiration: v.string(),
+    requestGeolocation: v.boolean(),
   },
   handler: async (
     { db, scheduler },
@@ -20,6 +21,7 @@ export default mutation({
       passwordHash,
       creatorKey,
       expiration,
+      requestGeolocation,
     }
   ) => {
     const whisperDoc = await db
@@ -36,6 +38,7 @@ export default mutation({
       passwordHash,
       creatorKey,
       expiration,
+      requestGeolocation,
     });
     await scheduleDeletion(scheduler, db, whisperName, creatorKey);
   },

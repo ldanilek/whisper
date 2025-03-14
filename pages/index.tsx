@@ -13,6 +13,7 @@ const Home: NextPage = () => {
   const [secret, setSecret] = useState('');
   const [expiration, setExpiration] = useState(expirationOptions[0]);
   const [password, setPassword] = useState('');
+  const [requestGeolocation, setRequestGeolocation] = useState(false);
   const router = useRouter();
   const [selectedFile, setSelectedFile] = useState<null | File>(null);
   const makeUploadURL = useMutation(api.fileUploadURL.default);
@@ -23,7 +24,8 @@ const Home: NextPage = () => {
       expiration,
       password,
       createWhisperMutation,
-      makeUploadURL
+      makeUploadURL,
+      requestGeolocation
     );
     router.push(
       `/created?name=${createResponse.name}&creatorKey=${createResponse.creatorKey}&password=${createResponse.password}`
@@ -67,6 +69,16 @@ const Home: NextPage = () => {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
+      </div>
+      <div>
+        <label>
+          request geolocation{' '}
+          <input
+            type="checkbox"
+            checked={requestGeolocation}
+            onChange={(e) => setRequestGeolocation(e.target.checked)}
+          />
+        </label>
       </div>
       <button className={styles.button} onClick={create}>
         Create Whisper

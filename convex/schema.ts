@@ -13,6 +13,8 @@ export default defineSchema({
     passwordHash: v.string(),
     // So creator can prove that they can configure the secret and read accesses.
     creatorKey: v.string(),
+    // Whether to request geolocation on access
+    requestGeolocation: v.optional(v.boolean()),
 
     expiration: v.string(),
   }).index('by_name', ['name']),
