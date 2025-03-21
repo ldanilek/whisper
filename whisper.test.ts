@@ -27,6 +27,7 @@ test('full whisper flow', async () => {
     passwordHash,
     creatorKey,
     expiration,
+    requestGeolocation: true,
   });
 
   // Access whisper
