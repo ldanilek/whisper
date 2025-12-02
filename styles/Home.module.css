@@ -2,11 +2,13 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .secretAttachment {
-  color: blue;
+  color: var(--link-color);
   text-decoration: underline;
 }
 
@@ -23,16 +25,31 @@
   width: 95%;
   min-height: 8rem;
   margin-top: 0rem;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color-dark);
+  border-radius: 4px;
+  padding: 0.5rem;
+  transition: background-color 0.3s ease, color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.secretDisplay:focus {
+  outline: none;
+  border-color: var(--link-color);
 }
 
 .secretOutput {
-  border: 1px solid;
+  border: 1px solid var(--border-color-dark);
   margin: 0.5rem;
   padding: 1rem;
   font-family: monospace;
   border-radius: 10px;
-  background-color: white;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   white-space: pre-wrap;
+  transition: background-color 0.3s ease, color 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .copiable {
@@ -48,13 +65,15 @@
 
 .shareURL {
   font-size: 0.8rem;
-  border: 1px solid black;
+  border: 1px solid var(--border-color-dark);
   border-radius: 16px;
   display: block;
   box-sizing: inherit;
   padding: 1em 16px;
-  background-color: white;
-  color: navy;
+  background-color: var(--bg-primary);
+  color: var(--link-color);
+  transition: background-color 0.3s ease, color 0.3s ease,
+    border-color 0.3s ease;
 }
 
 .button {
@@ -64,18 +83,20 @@
   margin: 0.5rem;
   padding: 0.5rem;
   text-decoration: none;
-  border: 1px solid gray;
+  border: 1px solid var(--border-color-dark);
   border-radius: 10px;
-  transition: color 0.15s ease, border-color 0.15s ease;
+  transition: color 0.15s ease, border-color 0.15s ease,
+    background-color 0.3s ease;
   text-align: center;
-  background-color: #f0f0f0;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 .button:hover,
 .button:focus,
 .button:active {
-  color: #0070f3;
-  border-color: #0070f3;
+  color: var(--link-hover);
+  border-color: var(--link-hover);
 }
 
 .accessLog {
@@ -84,25 +105,35 @@
 }
 
 .accessLogTable {
-  border: 1px solid gray;
+  border: 1px solid var(--border-color-dark);
   border-radius: 10px;
   margin: 2rem;
+  background-color: var(--bg-primary);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.accessLogTable td {
+  color: var(--text-primary);
+  transition: color 0.3s ease;
 }
 
 .accessLogEntry {
-  border-top: 1px solid gray;
+  border-top: 1px solid var(--border-color-dark);
   font-size: 0.8rem;
   padding: 2px;
   text-align: center;
+  color: var(--text-primary);
+  transition: color 0.3s ease, border-color 0.3s ease;
 }
 
 .footer {
   display: flex;
   flex: 1;
   padding: 2rem 0;
-  border-top: 1px solid #eaeaea;
+  border-top: 1px solid var(--border-color);
   justify-content: center;
   align-items: center;
+  transition: border-color 0.3s ease;
 }
 
 .footer a {
@@ -117,8 +148,9 @@
 }
 
 .title a {
-  color: #0070f3;
+  color: var(--link-color);
   text-decoration: none;
+  transition: color 0.3s ease;
 }
 
 .title a:hover,
@@ -139,18 +171,20 @@
   margin: 0;
   position: sticky;
   top: 0;
-  background-color: #f5f5f5;
-  border-bottom: 1px solid #eaeaea;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   flex: row;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .subtitle {
-  color: darkgray;
+  color: var(--text-tertiary);
   text-align: right;
   position: absolute;
   bottom: 0;
   right: 1em;
+  transition: color 0.3s ease;
 }
 
 .description {
