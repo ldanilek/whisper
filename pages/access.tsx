@@ -7,14 +7,20 @@ import React from 'react';
 
 const PasswordInput = ({ name }: { name: string }) => {
   const [inputPassword, setInputPassword] = useState<string>('');
+  const [isAccessing, setIsAccessing] = useState(false);
   const router = useRouter();
 
   return (
-    <>
-      <div>
-        Password{' '}
+    <div className={styles.formCard}>
+      <p className={styles.description} style={{ margin: 0 }}>
+        Enter the password to access this secret
+      </p>
+      <div className={styles.formGroup}>
+        <span className={styles.formLabel}>Password</span>
         <input
-          type="text"
+          type="password"
+          className={styles.passwordInput}
+          placeholder="Enter password"
           value={inputPassword}
           onChange={(e) => setInputPassword(e.target.value)}
         />
@@ -22,12 +28,15 @@ const PasswordInput = ({ name }: { name: string }) => {
       <button
         className={styles.button}
         onClick={() => {
+          if (isAccessing) return;
+          setIsAccessing(true);
           router.push(`/display?name=${name}&password=${inputPassword}`);
         }}
+        disabled={isAccessing}
       >
-        Access Secret
+        {isAccessing ? 'Accessing...' : 'Access Secret'}
       </button>
-    </>
+    </div>
   );
 };
 
@@ -38,19 +47,25 @@ const AccessButton = ({
   name: string;
   password: string;
 }) => {
+  const [isAccessing, setIsAccessing] = useState(false);
   const router = useRouter();
   return (
-    <>
-      Someone whispered a secret to you
+    <div className={styles.formCard}>
+      <p className={styles.description} style={{ margin: 0 }}>
+        Someone whispered a secret to you
+      </p>
       <button
         className={styles.button}
         onClick={() => {
+          if (isAccessing) return;
+          setIsAccessing(true);
           router.push(`/display?name=${name}&password=${password}`);
         }}
+        disabled={isAccessing}
       >
-        Access Secret
+        {isAccessing ? 'Accessing...' : 'Access Secret'}
       </button>
-    </>
+    </div>
   );
 };
 

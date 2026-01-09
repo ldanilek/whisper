@@ -73,25 +73,28 @@ const SecretDisplay = ({
   accessKey: string;
   password: string;
 }) => {
-  const { encryptedSecret, storageURLs } = useQuery(api.readSecret.default, {
+  const readSecretResult = useQuery(api.readSecret.default, {
     whisperName: name,
     accessKey,
     passwordHash: hashPassword(password),
-  }) ?? { encryptedSecret: undefined, storageURLs: [] };
-  if (!encryptedSecret) {
+  });
+
+  // useQuery returns undefined while loading; throws on error (caught by ExpirationWrapper)
+  if (readSecretResult === undefined) {
     return (
-      <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
+      <div className={styles.secretOutput}>
         {'Loading...'}
       </div>
     );
   }
+
+  const { encryptedSecret, storageURLs } = readSecretResult;
   let decryptedSecret: string = CryptoJS.AES.decrypt(
     encryptedSecret,
     password
   ).toString(CryptoJS.enc.Utf8);
   const attachments = [];
   for (const [storageId, url] of Object.entries(storageURLs)) {
-    console.log('storageURL', url);
     const matches =
       decryptedSecret.match(
         new RegExp(`Attachment: '[0-9a-fA-F]*' ${storageId}`)
@@ -112,8 +115,8 @@ const SecretDisplay = ({
     }
   }
   return (
-    <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
-      {decryptedSecret}
+    <div className={styles.secretOutput}>
+      <pre className={styles.secretText}>{decryptedSecret || '(empty)'}</pre>
       {attachments}
     </div>
   );
@@ -199,8 +202,12 @@ class ExpirationWrapper extends React.Component<
       // Avoid loops in case ExpirationDisplay is throwing "invalid password" errors.
       return (
         <Whisper>
-          <div>{this.state.caughtError}</div>
-          <div>Try again.</div>
+          <div className={styles.formCard}>
+            <div className={styles.description} style={{ color: '#8d2676' }}>
+              {this.state.caughtError}
+            </div>
+            <p className={styles.formLabel}>Try again.</p>
+          </div>
         </Whisper>
       );
     }
@@ -230,20 +237,25 @@ class ExpirationWrapper extends React.Component<
 }
 
 interface DisplayPageProps {
+  name: string | null;
+  password: string | null;
   accessKey: string | null;
   accessError: string | null;
   requestGeolocation: boolean;
 }
 
 const DisplayPage: NextPage<DisplayPageProps> = ({
+  name: nameProp,
+  password: passwordProp,
   accessKey,
   accessError,
   requestGeolocation,
 }) => {
   const router = useRouter();
-  const nameParam = router.query['name'];
+  // Use props from getServerSideProps (reliable); fallback to router.query for client-side edge cases
+  const nameParam = nameProp ?? router.query['name'];
   const name = typeof nameParam === 'string' ? nameParam : undefined;
-  const passwordParam = router.query['password'];
+  const passwordParam = passwordProp ?? router.query['password'];
   const password =
     typeof passwordParam === 'string' ? passwordParam : undefined;
   const recordGeolocation = useMutation(api.recordAccessGeolocation.default);
@@ -303,8 +315,12 @@ const DisplayPage: NextPage<DisplayPageProps> = ({
       whisperName={name}
       passwordHash={hashPassword(password)}
     >
-      Someone whispered this secret to you
-      <SecretDisplay name={name} accessKey={accessKey} password={password} />
+      <div className={styles.formCard}>
+        <p className={styles.description} style={{ margin: 0 }}>
+          Someone whispered this secret to you
+        </p>
+        <SecretDisplay name={name} accessKey={accessKey} password={password} />
+      </div>
     </ExpirationWrapper>
   );
 };
@@ -315,7 +331,8 @@ export const getServerSideProps: GetServerSideProps<DisplayPageProps> = async ({
   if (req === undefined) {
     return {
       props: {
-        ip: null,
+        name: null,
+        password: null,
         accessKey: null,
         accessError: null,
         requestGeolocation: false,
@@ -325,11 +342,17 @@ export const getServerSideProps: GetServerSideProps<DisplayPageProps> = async ({
   const ip =
     (req.headers['x-real-ip'] as string) || req.socket.remoteAddress || null;
   const url = new URL(req.url!, `http://${req.headers.host}`);
-  const name = url.searchParams.get('name')!;
-  const password = url.searchParams.get('password')!;
-  if (!password) {
+  const name = url.searchParams.get('name');
+  const password = url.searchParams.get('password');
+  if (!name || !password) {
     return {
-      props: { accessKey: null, accessError: null, requestGeolocation: false },
+      props: {
+        name: null,
+        password: null,
+        accessKey: null,
+        accessError: null,
+        requestGeolocation: false,
+      },
     };
   }
   const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -348,7 +371,9 @@ export const getServerSideProps: GetServerSideProps<DisplayPageProps> = async ({
       ssrKey: process.env.SSR_KEY!,
     }
   );
-  return { props: { accessKey, accessError, requestGeolocation } };
+  return {
+    props: { name, password, accessKey, accessError, requestGeolocation },
+  };
 };
 
 export default DisplayPage;

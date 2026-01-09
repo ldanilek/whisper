@@ -25,6 +25,7 @@ const AccessLog = ({
   });
   const [expirationText, setExpirationText] = useState<string>('');
   const [isExpired, setIsExpired] = useState<boolean>(false);
+  const [isExpiring, setIsExpiring] = useState(false);
   const expireNow = useMutation(api.expireNow.default);
   const accessFailureDocs =
     useQuery(api.readAccessLog.failures, { name: whisperName, creatorKey }) ||
@@ -52,9 +53,15 @@ const AccessLog = ({
         <div>
           <button
             className={styles.button}
-            onClick={() => expireNow({ whisperName, creatorKey })}
+            onClick={async () => {
+              if (isExpiring) return;
+              setIsExpiring(true);
+              await expireNow({ whisperName, creatorKey });
+              setIsExpiring(false);
+            }}
+            disabled={isExpiring}
           >
-            Expire Now
+            {isExpiring ? 'Expiring...' : 'Expire Now'}
           </button>
         </div>
       )}
@@ -142,14 +149,17 @@ const Location = ({ geolocation }: { geolocation?: string | null }) => {
 };
 
 const Copiable = ({ text }: { text: string }) => {
+  const [copied, setCopied] = useState(false);
   const copy = () => {
     navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
   return (
     <div className={styles.copiable}>
       <div className={styles.shareURL}>{text}</div>
       <button className={styles.button} onClick={copy}>
-        Copy to Clipboard
+        {copied ? 'Copied!' : 'Copy to Clipboard'}
       </button>
     </div>
   );
@@ -172,13 +182,15 @@ const Created: NextPage = () => {
   return (
     <Whisper>
       {name && password && creatorKey ? (
-        <div className={styles.description}>
-          Share this Private URL
-          <Copiable text={makeURL(name, password)} />
-          Or Share this Public URL and the password
-          <div className={styles.sharePair}>
-            <Copiable text={makeURL(name, null)} />
-            <Copiable text={password} />
+        <div className={styles.formCard}>
+          <div className={styles.description}>
+            <strong>Share this Private URL</strong>
+            <Copiable text={makeURL(name, password)} />
+            <strong>Or share this Public URL and the password</strong>
+            <div className={styles.sharePair}>
+              <Copiable text={makeURL(name, null)} />
+              <Copiable text={password} />
+            </div>
           </div>
           <AccessLog whisperName={name} creatorKey={creatorKey} />
         </div>
