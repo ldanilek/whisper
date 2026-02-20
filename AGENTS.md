@@ -2,20 +2,35 @@
 
 ### Overview
 
-Whisper is a Next.js + Convex secret-sharing app. The frontend runs locally; the backend is hosted on Convex cloud.
+Whisper is a Next.js + Convex secret-sharing app. The frontend runs locally; the backend (database, serverless functions, file storage) is hosted on Convex cloud.
 
 ### Services
 
 | Service | Command | Notes |
 |---------|---------|-------|
 | Next.js dev server | `npx next dev` | Serves at http://localhost:3000 |
-| Convex backend | `npx convex dev` | Syncs functions to Convex cloud; requires Convex auth. See `npm run dev` which runs both concurrently. |
+| Convex backend | `npx convex deploy --preview-create <name>` | Pushes functions to a Convex preview deployment. Requires `CONVEX_DEPLOY_KEY`. |
 
-### Running
+### Preview Deployment (backend development)
 
-- `npm run dev` starts both Next.js and Convex dev sync via `concurrently`.
-- If you only need the frontend (e.g. the Convex cloud backend at the URL in `.env` is already deployed), run `npx next dev` alone.
-- The `.env` file contains `NEXT_PUBLIC_CONVEX_URL` pointing to the deployed Convex backend.
+The update script automatically creates a Convex preview deployment on startup when `CONVEX_DEPLOY_KEY` is set. It:
+1. Runs `npx convex deploy --preview-create <branch-name>` to push functions and create/update the preview
+2. Writes the preview URL to `.env.local` (overriding the production URL in `.env`)
+3. Sets `SSR_KEY=cloud-agent-ssr-key` on the preview deployment and locally
+
+After modifying any files in `convex/`, re-deploy with:
+```
+PREVIEW_NAME=$(git branch --show-current | tr '/' '-')
+npx convex deploy --preview-create "${PREVIEW_NAME:-cloud-agent}"
+```
+
+### Running the frontend
+
+```
+npx next dev
+```
+
+Next.js reads `NEXT_PUBLIC_CONVEX_URL` from `.env.local` (or `.env` as fallback).
 
 ### Lint / Test / Build
 
@@ -25,6 +40,7 @@ Whisper is a Next.js + Convex secret-sharing app. The frontend runs locally; the
 
 ### Caveats
 
-- `npm ci` may fail if `package-lock.json` is out of sync with `package.json`. Use `npm install` to regenerate it first.
+- `npm ci` may fail if `package-lock.json` is out of sync with `package.json`. The update script uses `npm install` instead.
 - Watchpack permission warnings (e.g. `/etc/credstore`, `/root/.ssh`) in Next.js dev output are harmless and can be ignored.
-- `convex dev` requires Convex CLI authentication. Without it, the frontend still works if `NEXT_PUBLIC_CONVEX_URL` points to an already-deployed backend.
+- `SSR_KEY` must match between the Next.js server env and the Convex deployment env. The update script sets both to `cloud-agent-ssr-key`. Without `SSR_KEY`, the `/display` page (viewing a whisper) will error.
+- The `/display` page uses SSR (`getServerSideProps`) to call `accessWhisper` with the `SSR_KEY`, so it only works when `SSR_KEY` is correctly configured on both sides.
