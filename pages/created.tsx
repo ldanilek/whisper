@@ -160,13 +160,16 @@ const Created: NextPage = () => {
   const [name, setName] = useState<string | undefined>(undefined);
   const [creatorKey, setCreatorKey] = useState<string | undefined>(undefined);
   const [password, setPassword] = useState<string | undefined>(undefined);
+  const [sender, setSender] = useState<string | undefined>(undefined);
   useEffect(() => {
     const nameParam = router.query['name'] as string;
     const passwordParam = router.query['password'] as string;
     const creatorKeyParam = router.query['creatorKey'] as string;
+    const senderParam = router.query['sender'] as string | undefined;
     setName(nameParam);
     setCreatorKey(creatorKeyParam);
     setPassword(passwordParam);
+    setSender(senderParam);
   }, [router]);
 
   return (
@@ -174,10 +177,10 @@ const Created: NextPage = () => {
       {name && password && creatorKey ? (
         <div className={styles.description}>
           Share this Private URL
-          <Copiable text={makeURL(name, password)} />
+          <Copiable text={makeURL(name, password, sender)} />
           Or Share this Public URL and the password
           <div className={styles.sharePair}>
-            <Copiable text={makeURL(name, null)} />
+            <Copiable text={makeURL(name, null, sender)} />
             <Copiable text={password} />
           </div>
           <AccessLog whisperName={name} creatorKey={creatorKey} />

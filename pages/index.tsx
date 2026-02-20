@@ -2,7 +2,7 @@ import type { NextPage } from 'next';
 import styles from '../styles/Home.module.css';
 import { useMutation } from 'convex/react';
 import { useState } from 'react';
-import { createWhisper } from '../common';
+import { createWhisper, normalizeSender } from '../common';
 import { expirationOptions } from '../expiration';
 import { useRouter } from 'next/router';
 import Whisper from '../whisper';
@@ -12,6 +12,7 @@ const Home: NextPage = () => {
   const createWhisperMutation = useMutation(api.createWhisper.default);
   const [secret, setSecret] = useState('');
   const [expiration, setExpiration] = useState(expirationOptions[0]);
+  const [sender, setSender] = useState('');
   const [password, setPassword] = useState('');
   const [requestGeolocation, setRequestGeolocation] = useState(false);
   const router = useRouter();
@@ -23,13 +24,20 @@ const Home: NextPage = () => {
       selectedFile,
       expiration,
       password,
+      sender,
       createWhisperMutation,
       makeUploadURL,
       requestGeolocation
     );
-    router.push(
-      `/created?name=${createResponse.name}&creatorKey=${createResponse.creatorKey}&password=${createResponse.password}`
-    );
+    const params = new URLSearchParams();
+    params.set('name', createResponse.name);
+    params.set('creatorKey', createResponse.creatorKey);
+    params.set('password', createResponse.password);
+    const normalizedSender = normalizeSender(sender);
+    if (normalizedSender !== undefined) {
+      params.set('sender', normalizedSender);
+    }
+    router.push(`/created?${params.toString()}`);
   };
 
   return (
@@ -59,6 +67,16 @@ const Home: NextPage = () => {
             </option>
           ))}
         </select>
+      </div>
+      <div>
+        sender name{' '}
+        <input
+          placeholder="optional"
+          type="text"
+          className={styles.passwordInput}
+          value={sender}
+          onChange={(e) => setSender(e.target.value)}
+        />
       </div>
       <div>
         password{' '}

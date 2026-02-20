@@ -5,6 +5,7 @@ import { ConvexError, v } from 'convex/values';
 export default mutation({
   args: {
     whisperName: v.string(),
+    sender: v.optional(v.string()),
     encryptedSecret: v.string(),
     storageIds: v.array(v.string()),
     passwordHash: v.string(),
@@ -16,6 +17,7 @@ export default mutation({
     { db, scheduler },
     {
       whisperName,
+      sender,
       encryptedSecret,
       storageIds,
       passwordHash,
@@ -33,6 +35,7 @@ export default mutation({
     }
     await db.insert('whispers', {
       name: whisperName,
+      sender,
       encryptedSecret,
       storageIds,
       passwordHash,

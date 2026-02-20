@@ -18,10 +18,12 @@ test('full whisper flow', async () => {
   const creatorKey = 'creator123';
   const accessKey = 'access123';
   const expiration = 'after one access';
+  const sender = 'Ada';
 
   // Create whisper
   await t.mutation(api.createWhisper.default, {
     whisperName,
+    sender,
     encryptedSecret,
     storageIds: [],
     passwordHash,
@@ -47,5 +49,6 @@ test('full whisper flow', async () => {
   });
 
   expect(result.encryptedSecret).toBe(encryptedSecret);
+  expect(result.sender).toBe(sender);
   expect(result.storageURLs).toEqual({});
 });

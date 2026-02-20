@@ -4,13 +4,35 @@ import { useState } from 'react';
 import { useRouter } from 'next/router';
 import Whisper from '../whisper';
 import React from 'react';
+import { normalizeSender } from '../common';
 
-const PasswordInput = ({ name }: { name: string }) => {
+const senderLabel = (sender: string | undefined) =>
+  normalizeSender(sender) ?? 'Someone';
+
+const PasswordInput = ({
+  name,
+  sender,
+}: {
+  name: string;
+  sender: string | undefined;
+}) => {
   const [inputPassword, setInputPassword] = useState<string>('');
   const router = useRouter();
 
+  const accessSecret = () => {
+    const params = new URLSearchParams();
+    params.set('name', name);
+    params.set('password', inputPassword);
+    const normalizedSender = normalizeSender(sender);
+    if (normalizedSender !== undefined) {
+      params.set('sender', normalizedSender);
+    }
+    router.push(`/display?${params.toString()}`);
+  };
+
   return (
     <>
+      {senderLabel(sender)} sent you a secret
       <div>
         Password{' '}
         <input
@@ -21,9 +43,7 @@ const PasswordInput = ({ name }: { name: string }) => {
       </div>
       <button
         className={styles.button}
-        onClick={() => {
-          router.push(`/display?name=${name}&password=${inputPassword}`);
-        }}
+        onClick={accessSecret}
       >
         Access Secret
       </button>
@@ -34,20 +54,28 @@ const PasswordInput = ({ name }: { name: string }) => {
 const AccessButton = ({
   name,
   password,
+  sender,
 }: {
   name: string;
   password: string;
+  sender: string | undefined;
 }) => {
   const router = useRouter();
+  const accessSecret = () => {
+    const params = new URLSearchParams();
+    params.set('name', name);
+    params.set('password', password);
+    const normalizedSender = normalizeSender(sender);
+    if (normalizedSender !== undefined) {
+      params.set('sender', normalizedSender);
+    }
+    router.push(`/display?${params.toString()}`);
+  };
+
   return (
     <>
-      Someone whispered a secret to you
-      <button
-        className={styles.button}
-        onClick={() => {
-          router.push(`/display?name=${name}&password=${password}`);
-        }}
-      >
+      {senderLabel(sender)} sent you a secret
+      <button className={styles.button} onClick={accessSecret}>
         Access Secret
       </button>
     </>
@@ -61,6 +89,8 @@ const AccessPage: NextPage = () => {
   const passwordParam = router.query['password'];
   const password =
     typeof passwordParam === 'string' ? passwordParam : undefined;
+  const senderParam = router.query['sender'];
+  const sender = typeof senderParam === 'string' ? senderParam : undefined;
 
   if (!name) {
     return (
@@ -73,9 +103,9 @@ const AccessPage: NextPage = () => {
   return (
     <Whisper>
       {password !== undefined ? (
-        <AccessButton name={name} password={password} />
+        <AccessButton name={name} password={password} sender={sender} />
       ) : (
-        <PasswordInput name={name} />
+        <PasswordInput name={name} sender={sender} />
       )}
     </Whisper>
   );

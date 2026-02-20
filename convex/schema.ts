@@ -4,6 +4,7 @@ import { v } from 'convex/values';
 export default defineSchema({
   whispers: defineTable({
     name: v.string(),
+    sender: v.optional(v.string()),
     // Encrypted with password.
     encryptedSecret: v.string(),
     // Each stored file is encrypted with password.
