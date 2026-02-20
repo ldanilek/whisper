@@ -56,11 +56,7 @@ const Home: NextPage = () => {
       />
       <div>
         attach secret file{' '}
-        <input
-          type="file"
-          multiple
-          onChange={onAttachFile}
-        />
+        <input type="file" multiple onChange={onAttachFile} />
         {selectedFiles.length > 0 && (
           <ul>
             {selectedFiles.map((selectedFile, index) => (
