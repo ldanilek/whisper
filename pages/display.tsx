@@ -89,7 +89,8 @@ const SecretDisplay = ({
     encryptedSecret,
     password
   ).toString(CryptoJS.enc.Utf8);
-  const { sender: decryptedSender, secret } = decodeSenderSecret(decryptedSecret);
+  const { sender: decryptedSender, secret } =
+    decodeSenderSecret(decryptedSecret);
   decryptedSecret = secret;
   const attachments = [];
   for (const [storageId, url] of Object.entries(storageURLs)) {
