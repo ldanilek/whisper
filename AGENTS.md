@@ -13,7 +13,7 @@ Whisper is a Next.js + Convex secret-sharing app. The frontend runs locally; the
 | Service            | Command                                     | Notes                                                                          |
 | ------------------ | ------------------------------------------- | ------------------------------------------------------------------------------ |
 | Next.js dev server | `npx next dev`                              | Serves at http://localhost:3000                                                |
-| Convex backend     | `npx convex deploy`                         | Pushes functions to the existing deployment selected by env vars/keys. Requires `CONVEX_DEPLOY_KEY` for preview deploys. |
+| Convex backend     | `npx convex deploy --preview-name <name>`  | Pushes functions to an existing preview deployment. Requires `CONVEX_DEPLOY_KEY`. |
 
 ### Preview Deployment (backend development)
 
@@ -29,10 +29,11 @@ The `--cmd` / `--cmd-url-env-var-name` flags are the Convex-provided mechanism f
 After modifying any files in `convex/`, push updates to the existing preview deployment with:
 
 ```
-npx convex deploy
+PREVIEW_NAME=$(git branch --show-current | tr '/' '-')
+npx convex deploy --preview-name "${PREVIEW_NAME:-cloud-agent}"
 ```
 
-Use `--preview-create` only when initially creating a preview deployment. Do not use it for follow-up deploys from the same branch.
+Use `--preview-create` only when initially creating a preview deployment. For follow-up deploys from the same branch, use `--preview-name`.
 
 This is a required step for cloud agents: if you changed anything under `convex/`, do not finish the task until this deploy command succeeds.
 
