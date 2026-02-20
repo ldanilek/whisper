@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "concurrently": "^7.6.0",
-    "convex": "^1.30.0",
+    "convex": "https://github.com/ldanilek/convex-backend/releases/download/convex-preview-20260219-195445/convex-1.32.0.tgz",
     "crypto-js": "^4.1.1",
     "next": "latest",
     "react": "^18.2.0",
