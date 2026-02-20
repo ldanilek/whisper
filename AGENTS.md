@@ -33,6 +33,8 @@ PREVIEW_NAME=$(git branch --show-current | tr '/' '-')
 npx convex deploy --preview-create "${PREVIEW_NAME:-cloud-agent}"
 ```
 
+This is a required step for cloud agents: if you changed anything under `convex/`, do not finish the task until this deploy command succeeds.
+
 ### Running the frontend
 
 ```
