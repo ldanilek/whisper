@@ -24,6 +24,7 @@ export async function createWhisper(
   selectedFile: File | null,
   expiration: string,
   password: string,
+  sender: string,
   createWhisperMutation: ReactMutation<typeof api.createWhisper.default>,
   makeUploadURL: ReactMutation<typeof api.fileUploadURL.default>,
   requestGeolocation: boolean
@@ -33,6 +34,7 @@ export async function createWhisper(
   if (password.length === 0) {
     password = uuidv4();
   }
+  const normalizedSender = sender.trim() || 'Someone';
   const storageIds = [];
   if (selectedFile) {
     const [uploadURL, encryptedFile] = await Promise.all([
@@ -54,10 +56,15 @@ export async function createWhisper(
     secret += `\nAttachment: '${name}' ${storageId}`;
   }
   const encryptedSecret = CryptoJS.AES.encrypt(secret, password).toString();
+  const encryptedSender = CryptoJS.AES.encrypt(
+    normalizedSender,
+    password
+  ).toString();
   const passwordHash = hashPassword(password);
   await createWhisperMutation({
     whisperName: name,
     encryptedSecret,
+    encryptedSender,
     storageIds,
     passwordHash,
     creatorKey,

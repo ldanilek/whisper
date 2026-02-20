@@ -13,6 +13,7 @@ const Home: NextPage = () => {
   const [secret, setSecret] = useState('');
   const [expiration, setExpiration] = useState(expirationOptions[0]);
   const [password, setPassword] = useState('');
+  const [sender, setSender] = useState('');
   const [requestGeolocation, setRequestGeolocation] = useState(false);
   const router = useRouter();
   const [selectedFile, setSelectedFile] = useState<null | File>(null);
@@ -23,6 +24,7 @@ const Home: NextPage = () => {
       selectedFile,
       expiration,
       password,
+      sender,
       createWhisperMutation,
       makeUploadURL,
       requestGeolocation
@@ -59,6 +61,16 @@ const Home: NextPage = () => {
             </option>
           ))}
         </select>
+      </div>
+      <div>
+        sender{' '}
+        <input
+          placeholder="leave blank to stay anonymous"
+          type="text"
+          className={styles.passwordInput}
+          value={sender}
+          onChange={(e) => setSender(e.target.value)}
+        />
       </div>
       <div>
         password{' '}

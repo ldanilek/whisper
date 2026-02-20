@@ -73,12 +73,13 @@ const SecretDisplay = ({
   accessKey: string;
   password: string;
 }) => {
-  const { encryptedSecret, storageURLs } = useQuery(api.readSecret.default, {
-    whisperName: name,
-    accessKey,
-    passwordHash: hashPassword(password),
-  }) ?? { encryptedSecret: undefined, storageURLs: [] };
-  if (!encryptedSecret) {
+  const { encryptedSecret, encryptedSender, storageURLs } =
+    useQuery(api.readSecret.default, {
+      whisperName: name,
+      accessKey,
+      passwordHash: hashPassword(password),
+    }) ?? { encryptedSecret: undefined, encryptedSender: undefined, storageURLs: {} };
+  if (!encryptedSecret || encryptedSender === undefined) {
     return (
       <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
         {'Loading...'}
@@ -89,6 +90,11 @@ const SecretDisplay = ({
     encryptedSecret,
     password
   ).toString(CryptoJS.enc.Utf8);
+  const decryptedSender = encryptedSender
+    ? CryptoJS.AES.decrypt(encryptedSender, password)
+        .toString(CryptoJS.enc.Utf8)
+        .trim() || 'Someone'
+    : 'Someone';
   const attachments = [];
   for (const [storageId, url] of Object.entries(storageURLs)) {
     console.log('storageURL', url);
@@ -112,10 +118,13 @@ const SecretDisplay = ({
     }
   }
   return (
-    <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
-      {decryptedSecret}
-      {attachments}
-    </div>
+    <>
+      <div className={styles.description}>{decryptedSender} sent you a secret</div>
+      <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
+        {decryptedSecret}
+        {attachments}
+      </div>
+    </>
   );
 };
 
@@ -303,7 +312,6 @@ const DisplayPage: NextPage<DisplayPageProps> = ({
       whisperName={name}
       passwordHash={hashPassword(password)}
     >
-      Someone whispered this secret to you
       <SecretDisplay name={name} accessKey={accessKey} password={password} />
     </ExpirationWrapper>
   );
