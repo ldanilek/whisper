@@ -10,10 +10,10 @@ Whisper is a Next.js + Convex secret-sharing app. The frontend runs locally; the
 
 ### Services
 
-| Service            | Command                                     | Notes                                                                          |
-| ------------------ | ------------------------------------------- | ------------------------------------------------------------------------------ |
-| Next.js dev server | `npx next dev`                              | Serves at http://localhost:3000                                                |
-| Convex backend     | `npx convex deploy --preview-name <name>`  | Pushes functions to an existing preview deployment. Requires `CONVEX_DEPLOY_KEY`. |
+| Service            | Command                                   | Notes                                                                             |
+| ------------------ | ----------------------------------------- | --------------------------------------------------------------------------------- |
+| Next.js dev server | `npx next dev`                            | Serves at http://localhost:3000                                                   |
+| Convex backend     | `npx convex deploy --preview-name <name>` | Pushes functions to an existing preview deployment. Requires `CONVEX_DEPLOY_KEY`. |
 
 ### Preview Deployment (backend development)
 
