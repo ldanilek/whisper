@@ -50,6 +50,14 @@ Next.js reads `NEXT_PUBLIC_CONVEX_URL` from `.env.local` (or `.env` as fallback)
 - **Test**: `npm test` (Vitest with `convex-test`; tests run in-memory, no Convex backend needed)
 - **Build**: `npm run build`
 
+### Manual smoke test flow
+
+When validating the share flow manually in the browser:
+
+1. Create a secret and click **Create Whisper**.
+2. Click **Copy to Clipboard** on the created page.
+3. Paste the copied URL into the browser address bar and navigate to it. Do not type the URL manually.
+
 ### Caveats
 
 - `npm ci` may fail if `package-lock.json` is out of sync with `package.json`. The update script uses `npm install` instead.
