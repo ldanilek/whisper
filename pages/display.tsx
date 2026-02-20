@@ -370,7 +370,9 @@ export const getServerSideProps: GetServerSideProps<DisplayPageProps> = async ({
       ssrKey: process.env.SSR_KEY!,
     }
   );
-  return { props: { name, password, accessKey, accessError, requestGeolocation } };
+  return {
+    props: { name, password, accessKey, accessError, requestGeolocation },
+  };
 };
 
 export default DisplayPage;
