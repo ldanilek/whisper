@@ -73,12 +73,18 @@ const SecretDisplay = ({
   accessKey: string;
   password: string;
 }) => {
-  const { encryptedSecret, encryptedSender, storageURLs } =
-    useQuery(api.readSecret.default, {
+  const { encryptedSecret, encryptedSender, storageURLs } = useQuery(
+    api.readSecret.default,
+    {
       whisperName: name,
       accessKey,
       passwordHash: hashPassword(password),
-    }) ?? { encryptedSecret: undefined, encryptedSender: undefined, storageURLs: {} };
+    }
+  ) ?? {
+    encryptedSecret: undefined,
+    encryptedSender: undefined,
+    storageURLs: {},
+  };
   if (!encryptedSecret || encryptedSender === undefined) {
     return (
       <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
@@ -119,7 +125,9 @@ const SecretDisplay = ({
   }
   return (
     <>
-      <div className={styles.description}>{decryptedSender} sent you a secret</div>
+      <div className={styles.description}>
+        {decryptedSender} sent you a secret
+      </div>
       <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
         {decryptedSecret}
         {attachments}
