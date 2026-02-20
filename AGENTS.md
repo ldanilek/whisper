@@ -10,10 +10,10 @@ Whisper is a Next.js + Convex secret-sharing app. The frontend runs locally; the
 
 ### Services
 
-| Service            | Command                                     | Notes                                                                          |
-| ------------------ | ------------------------------------------- | ------------------------------------------------------------------------------ |
-| Next.js dev server | `npx next dev`                              | Serves at http://localhost:3000                                                |
-| Convex backend     | `npx convex deploy --preview-create <name>` | Pushes functions to a Convex preview deployment. Requires `CONVEX_DEPLOY_KEY`. |
+| Service            | Command                                   | Notes                                                                             |
+| ------------------ | ----------------------------------------- | --------------------------------------------------------------------------------- |
+| Next.js dev server | `npx next dev`                            | Serves at http://localhost:3000                                                   |
+| Convex backend     | `npx convex deploy --preview-name <name>` | Pushes functions to an existing preview deployment. Requires `CONVEX_DEPLOY_KEY`. |
 
 ### Preview Deployment (backend development)
 
@@ -26,12 +26,16 @@ The update script automatically creates a Convex preview deployment on startup w
 
 The `--cmd` / `--cmd-url-env-var-name` flags are the Convex-provided mechanism for passing the deployment URL to a command (see `npx convex deploy --help`). The update script uses them to write `.env.local` instead of the typical `npm run build`.
 
-After modifying any files in `convex/`, re-deploy with:
+After modifying any files in `convex/`, push updates to the existing preview deployment with:
 
 ```
 PREVIEW_NAME=$(git branch --show-current | tr '/' '-')
-npx convex deploy --preview-create "${PREVIEW_NAME:-cloud-agent}"
+npx convex deploy --preview-name "${PREVIEW_NAME:-cloud-agent}"
 ```
+
+Use `--preview-create` only when initially creating a preview deployment. For follow-up deploys from the same branch, use `--preview-name`.
+
+This is a required step for cloud agents: if you changed anything under `convex/`, do not finish the task until this deploy command succeeds.
 
 ### Running the frontend
 
@@ -46,6 +50,14 @@ Next.js reads `NEXT_PUBLIC_CONVEX_URL` from `.env.local` (or `.env` as fallback)
 - **Lint**: `npm run lint` (ESLint + Prettier)
 - **Test**: `npm test` (Vitest with `convex-test`; tests run in-memory, no Convex backend needed)
 - **Build**: `npm run build`
+
+### Manual smoke test flow
+
+When validating the share flow manually in the browser:
+
+1. Create a secret and click **Create Whisper**.
+2. Click **Copy to Clipboard** on the created page.
+3. Paste the copied URL into the browser address bar and navigate to it. Do not type the URL manually.
 
 ### Caveats
 
