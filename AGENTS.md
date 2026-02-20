@@ -13,14 +13,14 @@ Whisper is a Next.js + Convex secret-sharing app. The frontend runs locally; the
 | Service            | Command                                     | Notes                                                                          |
 | ------------------ | ------------------------------------------- | ------------------------------------------------------------------------------ |
 | Next.js dev server | `npx next dev`                              | Serves at http://localhost:3000                                                |
-| Convex backend     | `npx convex deploy --preview-create <name>` | Pushes functions to a Convex preview deployment. Requires `CONVEX_DEPLOY_KEY`. |
+| Convex backend | `npx convex dev --preview-name <name>`      | Watches and pushes changes to a preview deployment. Requires `CONVEX_DEPLOY_KEY`. |
 
 ### Preview Deployment (backend development)
 
 The update script automatically creates a Convex preview deployment on startup when `CONVEX_DEPLOY_KEY` is set. It:
 
 1. Derives a preview name from the current git branch
-2. Runs `npx convex deploy --preview-create <name>` with `--cmd` to write the preview URL into `.env.local`
+2. Runs `npx convex dev --preview-name <name>`
 3. Pushes Convex functions to the preview deployment
 4. Sets `SSR_KEY=cloud-agent-ssr-key` on the preview deployment via `npx convex env set`
 
@@ -30,8 +30,16 @@ After modifying any files in `convex/`, re-deploy with:
 
 ```
 PREVIEW_NAME=$(git branch --show-current | tr '/' '-')
-npx convex deploy --preview-create "${PREVIEW_NAME:-cloud-agent}"
+npx convex dev --preview-name "${PREVIEW_NAME:-cloud-agent}" --once
 ```
+
+Alternatively, for continuous development with hot-reloading, run:
+
+```
+npx convex dev --preview-name "${PREVIEW_NAME:-cloud-agent}"
+```
+
+This watches for changes in `convex/` and automatically pushes them to the preview deployment.
 
 ### Running the frontend
 
