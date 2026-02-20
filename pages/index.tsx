@@ -1,7 +1,7 @@
 import type { NextPage } from 'next';
 import styles from '../styles/Home.module.css';
 import { useMutation } from 'convex/react';
-import { useState } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import { createWhisper } from '../common';
 import { expirationOptions } from '../expiration';
 import { useRouter } from 'next/router';
@@ -15,12 +15,26 @@ const Home: NextPage = () => {
   const [password, setPassword] = useState('');
   const [requestGeolocation, setRequestGeolocation] = useState(false);
   const router = useRouter();
-  const [selectedFile, setSelectedFile] = useState<null | File>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const makeUploadURL = useMutation(api.fileUploadURL.default);
+  const onAttachFile = (event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? []);
+    if (files.length === 0) {
+      return;
+    }
+    setSelectedFiles((previousFiles) => previousFiles.concat(files));
+    // Let users pick the same file again if they removed it.
+    event.target.value = '';
+  };
+  const removeFileAtIndex = (indexToRemove: number) => {
+    setSelectedFiles((previousFiles) =>
+      previousFiles.filter((_, index) => index !== indexToRemove)
+    );
+  };
   const create = async () => {
     const createResponse = await createWhisper(
       secret,
-      selectedFile,
+      selectedFiles,
       expiration,
       password,
       createWhisperMutation,
@@ -44,8 +58,23 @@ const Home: NextPage = () => {
         attach secret file{' '}
         <input
           type="file"
-          onChange={(event) => setSelectedFile(event.target.files![0])}
+          multiple
+          onChange={onAttachFile}
         />
+        {selectedFiles.length > 0 && (
+          <ul>
+            {selectedFiles.map((selectedFile, index) => (
+              <li
+                key={`${selectedFile.name}-${selectedFile.lastModified}-${index}`}
+              >
+                {selectedFile.name}{' '}
+                <button type="button" onClick={() => removeFileAtIndex(index)}>
+                  remove
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
       <div>
         <span>expires&nbsp;</span>

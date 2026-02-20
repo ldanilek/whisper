@@ -21,7 +21,7 @@ const encryptFile = async (blob: Blob, password: string): Promise<Blob> => {
 
 export async function createWhisper(
   secret: string,
-  selectedFile: File | null,
+  selectedFiles: File[],
   expiration: string,
   password: string,
   createWhisperMutation: ReactMutation<typeof api.createWhisper.default>,
@@ -33,8 +33,8 @@ export async function createWhisper(
   if (password.length === 0) {
     password = uuidv4();
   }
-  const storageIds = [];
-  if (selectedFile) {
+  const storageIds: string[] = [];
+  for (const selectedFile of selectedFiles) {
     const [uploadURL, encryptedFile] = await Promise.all([
       makeUploadURL(),
       encryptFile(selectedFile, password),
@@ -44,11 +44,11 @@ export async function createWhisper(
       headers: { 'Content-Type': 'application/octet-stream' },
       body: encryptedFile,
     });
-    const resultJson = await result.json();
-    if (!result.ok) {
-      console.error(resultJson);
+    const resultJson: { storageId?: string } = await result.json();
+    if (!result.ok || typeof resultJson.storageId !== 'string') {
+      throw new Error(`upload failed for file ${selectedFile.name}`);
     }
-    const storageId = resultJson['storageId'];
+    const storageId = resultJson.storageId;
     storageIds.push(storageId);
     const name = Buffer.from(selectedFile.name, 'ascii').toString('hex');
     secret += `\nAttachment: '${name}' ${storageId}`;
