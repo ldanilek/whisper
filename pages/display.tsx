@@ -89,7 +89,9 @@ const SecretDisplay = ({
   if (response === undefined) {
     return (
       <>
-        <div className={styles.description}>{senderLabel} sent you a secret</div>
+        <div className={styles.description}>
+          {senderLabel} sent you a secret
+        </div>
         <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
           {'Loading...'}
         </div>

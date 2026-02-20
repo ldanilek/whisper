@@ -41,10 +41,7 @@ const PasswordInput = ({
           onChange={(e) => setInputPassword(e.target.value)}
         />
       </div>
-      <button
-        className={styles.button}
-        onClick={accessSecret}
-      >
+      <button className={styles.button} onClick={accessSecret}>
         Access Secret
       </button>
     </>
