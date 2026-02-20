@@ -11,7 +11,6 @@ export default query({
   },
   returns: v.object({
     encryptedSecret: v.string(),
-    encryptedSender: v.union(v.string(), v.null()),
     storageURLs: v.record(v.string(), v.union(v.string(), v.null())),
   }),
   handler: async (
@@ -40,7 +39,6 @@ export default query({
     );
     return {
       encryptedSecret: whisperDoc.encryptedSecret,
-      encryptedSender: whisperDoc.encryptedSender ?? null,
       storageURLs: Object.fromEntries(storageURLs),
     };
   },

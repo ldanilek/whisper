@@ -2,7 +2,7 @@ import type { GetServerSideProps, NextPage } from 'next';
 import styles from '../styles/Home.module.css';
 import { useQuery, useMutation } from 'convex/react';
 import { useState, useEffect } from 'react';
-import { hashPassword } from '../common';
+import { decodeSenderSecret, hashPassword } from '../common';
 import { useRouter } from 'next/router';
 import Whisper from '../whisper';
 import React from 'react';
@@ -73,19 +73,12 @@ const SecretDisplay = ({
   accessKey: string;
   password: string;
 }) => {
-  const { encryptedSecret, encryptedSender, storageURLs } = useQuery(
-    api.readSecret.default,
-    {
-      whisperName: name,
-      accessKey,
-      passwordHash: hashPassword(password),
-    }
-  ) ?? {
-    encryptedSecret: undefined,
-    encryptedSender: undefined,
-    storageURLs: {},
-  };
-  if (!encryptedSecret || encryptedSender === undefined) {
+  const { encryptedSecret, storageURLs } = useQuery(api.readSecret.default, {
+    whisperName: name,
+    accessKey,
+    passwordHash: hashPassword(password),
+  }) ?? { encryptedSecret: undefined, storageURLs: {} };
+  if (!encryptedSecret) {
     return (
       <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
         {'Loading...'}
@@ -96,11 +89,8 @@ const SecretDisplay = ({
     encryptedSecret,
     password
   ).toString(CryptoJS.enc.Utf8);
-  const decryptedSender = encryptedSender
-    ? CryptoJS.AES.decrypt(encryptedSender, password)
-        .toString(CryptoJS.enc.Utf8)
-        .trim() || 'Someone'
-    : 'Someone';
+  const { sender: decryptedSender, secret } = decodeSenderSecret(decryptedSecret);
+  decryptedSecret = secret;
   const attachments = [];
   for (const [storageId, url] of Object.entries(storageURLs)) {
     console.log('storageURL', url);

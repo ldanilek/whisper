@@ -6,7 +6,6 @@ export default mutation({
   args: {
     whisperName: v.string(),
     encryptedSecret: v.string(),
-    encryptedSender: v.string(),
     storageIds: v.array(v.string()),
     passwordHash: v.string(),
     creatorKey: v.string(),
@@ -18,7 +17,6 @@ export default mutation({
     {
       whisperName,
       encryptedSecret,
-      encryptedSender,
       storageIds,
       passwordHash,
       creatorKey,
@@ -36,7 +34,6 @@ export default mutation({
     await db.insert('whispers', {
       name: whisperName,
       encryptedSecret,
-      encryptedSender,
       storageIds,
       passwordHash,
       creatorKey,
