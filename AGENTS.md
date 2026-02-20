@@ -19,9 +19,12 @@ Whisper is a Next.js + Convex secret-sharing app. The frontend runs locally; the
 
 The update script automatically creates a Convex preview deployment on startup when `CONVEX_DEPLOY_KEY` is set. It:
 
-1. Runs `npx convex deploy --preview-create <branch-name>` to push functions and create/update the preview
-2. Writes the preview URL to `.env.local` (overriding the production URL in `.env`)
-3. Sets `SSR_KEY=cloud-agent-ssr-key` on the preview deployment and locally
+1. Derives a preview name from the current git branch
+2. Runs `npx convex deploy --preview-create <name>` with `--cmd` to write the preview URL into `.env.local`
+3. Pushes Convex functions to the preview deployment
+4. Sets `SSR_KEY=cloud-agent-ssr-key` on the preview deployment via `npx convex env set`
+
+The `--cmd` / `--cmd-url-env-var-name` flags are the Convex-provided mechanism for passing the deployment URL to a command (see `npx convex deploy --help`). The update script uses them to write `.env.local` instead of the typical `npm run build`.
 
 After modifying any files in `convex/`, re-deploy with:
 
