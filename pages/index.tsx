@@ -13,6 +13,7 @@ const Home: NextPage = () => {
   const [secret, setSecret] = useState('');
   const [expiration, setExpiration] = useState(expirationOptions[0]);
   const [password, setPassword] = useState('');
+  const [sender, setSender] = useState('');
   const [requestGeolocation, setRequestGeolocation] = useState(false);
   const router = useRouter();
   const [selectedFile, setSelectedFile] = useState<null | File>(null);
@@ -27,9 +28,16 @@ const Home: NextPage = () => {
       makeUploadURL,
       requestGeolocation
     );
-    router.push(
-      `/created?name=${createResponse.name}&creatorKey=${createResponse.creatorKey}&password=${createResponse.password}`
-    );
+    const senderName = sender.trim();
+    router.push({
+      pathname: '/created',
+      query: {
+        name: createResponse.name,
+        creatorKey: createResponse.creatorKey,
+        password: createResponse.password,
+        ...(senderName ? { sender: senderName } : {}),
+      },
+    });
   };
 
   return (
@@ -68,6 +76,16 @@ const Home: NextPage = () => {
           className={styles.passwordInput}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+        />
+      </div>
+      <div>
+        sender{' '}
+        <input
+          placeholder="your name (optional)"
+          type="text"
+          className={styles.passwordInput}
+          value={sender}
+          onChange={(e) => setSender(e.target.value)}
         />
       </div>
       <div>

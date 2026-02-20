@@ -75,11 +75,20 @@ export function hashPassword(password: string): string {
   return CryptoJS.SHA256(password).toString();
 }
 
-export function makeURL(name: string, password: string | null): string {
+export function makeURL(
+  name: string,
+  password: string | null,
+  sender?: string
+): string {
   const currentURL = window.location;
   const baseURL = currentURL.protocol + '//' + currentURL.host;
-  if (password === null) {
-    return `${baseURL}/access?name=${name}`;
+  const searchParams = new URLSearchParams({ name });
+  if (password !== null) {
+    searchParams.set('password', password);
   }
-  return `${baseURL}/access?name=${name}&password=${password}`;
+  const senderName = sender?.trim();
+  if (senderName) {
+    searchParams.set('sender', senderName);
+  }
+  return `${baseURL}/access?${searchParams.toString()}`;
 }
