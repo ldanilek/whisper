@@ -20,11 +20,11 @@ Whisper is a Next.js + Convex secret-sharing app. The frontend runs locally; the
 The update script automatically creates a Convex preview deployment on startup when `CONVEX_DEPLOY_KEY` is set. It:
 
 1. Derives a preview name from the current git branch
-2. Runs `npx convex dev --preview-name <name>`
+2. Runs `npx convex deploy --preview-create <name>` with `--cmd` / `--cmd-url-env-var-name` to write `.env.local`
 3. Pushes Convex functions to the preview deployment
 4. Sets `SSR_KEY=cloud-agent-ssr-key` on the preview deployment via `npx convex env set`
 
-The `--cmd` / `--cmd-url-env-var-name` flags are the Convex-provided mechanism for passing the deployment URL to a command (see `npx convex deploy --help`). The update script uses them to write `.env.local` instead of the typical `npm run build`.
+The `--cmd` / `--cmd-url-env-var-name` flags are on `convex deploy` (not `convex dev`). The update script uses them to write `.env.local` with the deployment URL. The Convex steps are guarded with `|| true` so failures (e.g. network restrictions) do not break startup.
 
 After modifying any files in `convex/`, re-deploy with:
 
@@ -61,3 +61,4 @@ Next.js reads `NEXT_PUBLIC_CONVEX_URL` from `.env.local` (or `.env` as fallback)
 - Watchpack permission warnings (e.g. `/etc/credstore`, `/root/.ssh`) in Next.js dev output are harmless and can be ignored.
 - `SSR_KEY` must match between the Next.js server env and the Convex deployment env. The update script sets both to `cloud-agent-ssr-key`. Without `SSR_KEY`, the `/display` page (viewing a whisper) will error.
 - The `/display` page uses SSR (`getServerSideProps`) to call `accessWhisper` with the `SSR_KEY`, so it only works when `SSR_KEY` is correctly configured on both sides.
+- Cloud agent VMs may have restricted egress. If `convex deploy` or `convex dev` fails with `ECONNRESET`, Convex cloud endpoints are blocked. The frontend still starts but cannot reach the backend. Check Network Access settings in cloud agent configuration.
