@@ -125,7 +125,7 @@ const SecretDisplay = ({
     <>
       <div
         className={styles.description}
-      >{`${senderDisplay} sent you a secret`}</div>
+      >{`${senderDisplay} whispered this secret to you`}</div>
       <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
         {decryptedSecret}
         {attachments}
