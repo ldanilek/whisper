@@ -3,7 +3,6 @@ import styles from '../styles/Home.module.css';
 import { useQuery, useMutation } from 'convex/react';
 import { useState, useEffect } from 'react';
 import { hashPassword } from '../common';
-import { useRouter } from 'next/router';
 import Whisper from '../whisper';
 import React from 'react';
 import { ConvexHttpClient } from 'convex/browser';
@@ -245,66 +244,82 @@ class ExpirationWrapper extends React.Component<
 }
 
 interface DisplayPageProps {
+  name: string | null;
+  password: string | null;
   accessKey: string | null;
   accessError: string | null;
   requestGeolocation: boolean;
 }
 
 const DisplayPage: NextPage<DisplayPageProps> = ({
+  name,
+  password,
   accessKey,
   accessError,
   requestGeolocation,
 }) => {
-  const router = useRouter();
-  const nameParam = router.query['name'];
-  const name = typeof nameParam === 'string' ? nameParam : undefined;
-  const passwordParam = router.query['password'];
-  const password =
-    typeof passwordParam === 'string' ? passwordParam : undefined;
   const recordGeolocation = useMutation(api.recordAccessGeolocation.default);
   const recordGeolocationForFailure = useMutation(
     api.recordAccessGeolocation.forFailure
   );
   const [error, setError] = useState<string | null>(accessError);
   useEffect(() => {
-    if (name === undefined || password === undefined) {
+    if (!requestGeolocation) {
       return;
     }
-    if (requestGeolocation) {
-      void (async () => {
-        const position = await getGeolocation();
-        if (!accessError) {
-          recordGeolocation({
-            whisperName: name,
-            accessKey: accessKey!,
-            geolocation: position,
-            passwordHash: hashPassword(password),
-          }).catch((err) => {
-            setError(err.toString());
-          });
-        } else {
-          recordGeolocationForFailure({
-            whisperName: name,
-            accessKey: accessKey!,
-            geolocation: position,
-          }).catch((err) => console.error(err));
-        }
-      })();
+    if (name === null || password === null || accessKey === null) {
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router]);
+    void (async () => {
+      const position = await getGeolocation();
+      if (!accessError) {
+        recordGeolocation({
+          whisperName: name,
+          accessKey,
+          geolocation: position,
+          passwordHash: hashPassword(password),
+        }).catch((err) => {
+          setError(err.toString());
+        });
+      } else {
+        recordGeolocationForFailure({
+          whisperName: name,
+          accessKey,
+          geolocation: position,
+        }).catch((err) => console.error(err));
+      }
+    })();
+  }, [
+    accessError,
+    accessKey,
+    name,
+    password,
+    recordGeolocation,
+    recordGeolocationForFailure,
+    requestGeolocation,
+  ]);
+
+  if (name === null || password === null) {
+    return (
+      <Whisper>
+        <div className={styles.description}>
+          Missing whisper link parameters. Open the full access URL.
+        </div>
+      </Whisper>
+    );
+  }
 
   if (error) {
     return (
       <ExpirationWrapper
         inputError={error}
-        whisperName={name ?? ''}
-        passwordHash={hashPassword(password ?? '')}
+        whisperName={name}
+        passwordHash={hashPassword(password)}
       ></ExpirationWrapper>
     );
   }
 
-  if (!(name && accessKey && password)) {
+  if (accessKey === null) {
     return (
       <Whisper>
         <div className={styles.description}>Loading...</div>
@@ -329,7 +344,8 @@ export const getServerSideProps: GetServerSideProps<DisplayPageProps> = async ({
   if (req === undefined) {
     return {
       props: {
-        ip: null,
+        name: null,
+        password: null,
         accessKey: null,
         accessError: null,
         requestGeolocation: false,
@@ -339,11 +355,17 @@ export const getServerSideProps: GetServerSideProps<DisplayPageProps> = async ({
   const ip =
     (req.headers['x-real-ip'] as string) || req.socket.remoteAddress || null;
   const url = new URL(req.url!, `http://${req.headers.host}`);
-  const name = url.searchParams.get('name')!;
-  const password = url.searchParams.get('password')!;
-  if (!password) {
+  const name = url.searchParams.get('name');
+  const password = url.searchParams.get('password');
+  if (!name || !password) {
     return {
-      props: { accessKey: null, accessError: null, requestGeolocation: false },
+      props: {
+        name,
+        password,
+        accessKey: null,
+        accessError: null,
+        requestGeolocation: false,
+      },
     };
   }
   const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -362,7 +384,9 @@ export const getServerSideProps: GetServerSideProps<DisplayPageProps> = async ({
       ssrKey: process.env.SSR_KEY!,
     }
   );
-  return { props: { accessKey, accessError, requestGeolocation } };
+  return {
+    props: { name, password, accessKey, accessError, requestGeolocation },
+  };
 };
 
 export default DisplayPage;
