@@ -73,11 +73,12 @@ const SecretDisplay = ({
   accessKey: string;
   password: string;
 }) => {
-  const { encryptedSecret, storageURLs } = useQuery(api.readSecret.default, {
-    whisperName: name,
-    accessKey,
-    passwordHash: hashPassword(password),
-  }) ?? { encryptedSecret: undefined, storageURLs: [] };
+  const { encryptedSecret, encryptedSender, storageURLs } =
+    useQuery(api.readSecret.default, {
+      whisperName: name,
+      accessKey,
+      passwordHash: hashPassword(password),
+    }) ?? { encryptedSecret: undefined, encryptedSender: null, storageURLs: {} };
   if (!encryptedSecret) {
     return (
       <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
@@ -85,6 +86,12 @@ const SecretDisplay = ({
       </div>
     );
   }
+  const decryptedSender = encryptedSender
+    ? CryptoJS.AES.decrypt(encryptedSender, password)
+        .toString(CryptoJS.enc.Utf8)
+        .trim()
+    : '';
+  const senderDisplay = decryptedSender.length > 0 ? decryptedSender : 'Someone';
   let decryptedSecret: string = CryptoJS.AES.decrypt(
     encryptedSecret,
     password
@@ -112,10 +119,13 @@ const SecretDisplay = ({
     }
   }
   return (
-    <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
-      {decryptedSecret}
-      {attachments}
-    </div>
+    <>
+      <div className={styles.description}>{`${senderDisplay} sent you a secret`}</div>
+      <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
+        {decryptedSecret}
+        {attachments}
+      </div>
+    </>
   );
 };
 
@@ -303,7 +313,6 @@ const DisplayPage: NextPage<DisplayPageProps> = ({
       whisperName={name}
       passwordHash={hashPassword(password)}
     >
-      Someone whispered this secret to you
       <SecretDisplay name={name} accessKey={accessKey} password={password} />
     </ExpirationWrapper>
   );

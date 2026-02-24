@@ -21,6 +21,7 @@ const encryptFile = async (blob: Blob, password: string): Promise<Blob> => {
 
 export async function createWhisper(
   secret: string,
+  sender: string,
   selectedFile: File | null,
   expiration: string,
   password: string,
@@ -54,10 +55,12 @@ export async function createWhisper(
     secret += `\nAttachment: '${name}' ${storageId}`;
   }
   const encryptedSecret = CryptoJS.AES.encrypt(secret, password).toString();
+  const encryptedSender = CryptoJS.AES.encrypt(sender.trim(), password).toString();
   const passwordHash = hashPassword(password);
   await createWhisperMutation({
     whisperName: name,
     encryptedSecret,
+    encryptedSender,
     storageIds,
     passwordHash,
     creatorKey,

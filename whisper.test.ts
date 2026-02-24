@@ -14,6 +14,7 @@ test('full whisper flow', async () => {
   // Test data
   const whisperName = 'test-whisper';
   const encryptedSecret = 'encrypted-data';
+  const encryptedSender = 'encrypted-sender';
   const passwordHash = 'hashed-password';
   const creatorKey = 'creator123';
   const accessKey = 'access123';
@@ -23,6 +24,7 @@ test('full whisper flow', async () => {
   await t.mutation(api.createWhisper.default, {
     whisperName,
     encryptedSecret,
+    encryptedSender,
     storageIds: [],
     passwordHash,
     creatorKey,
@@ -47,5 +49,6 @@ test('full whisper flow', async () => {
   });
 
   expect(result.encryptedSecret).toBe(encryptedSecret);
+  expect(result.encryptedSender).toBe(encryptedSender);
   expect(result.storageURLs).toEqual({});
 });
