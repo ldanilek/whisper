@@ -2,7 +2,7 @@ import type { GetServerSideProps, NextPage } from 'next';
 import styles from '../styles/Home.module.css';
 import { useQuery, useMutation } from 'convex/react';
 import { useState, useEffect } from 'react';
-import { hashPassword } from '../common';
+import { hashPassword, normalizeSender } from '../common';
 import { useRouter } from 'next/router';
 import Whisper from '../whisper';
 import React from 'react';
@@ -68,23 +68,37 @@ const SecretDisplay = ({
   name,
   accessKey,
   password,
+  senderFromURL,
 }: {
   name: string;
   accessKey: string;
   password: string;
+  senderFromURL?: string;
 }) => {
-  const { encryptedSecret, storageURLs } = useQuery(api.readSecret.default, {
+  const response = useQuery(api.readSecret.default, {
     whisperName: name,
     accessKey,
     passwordHash: hashPassword(password),
-  }) ?? { encryptedSecret: undefined, storageURLs: [] };
-  if (!encryptedSecret) {
+  });
+  const sender =
+    response === undefined
+      ? normalizeSender(senderFromURL)
+      : normalizeSender(response.sender);
+  const senderLabel = sender ?? 'Someone';
+
+  if (response === undefined) {
     return (
-      <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
-        {'Loading...'}
-      </div>
+      <>
+        <div className={styles.description}>
+          {senderLabel} sent you a secret
+        </div>
+        <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
+          {'Loading...'}
+        </div>
+      </>
     );
   }
+  const { encryptedSecret, storageURLs } = response;
   let decryptedSecret: string = CryptoJS.AES.decrypt(
     encryptedSecret,
     password
@@ -112,10 +126,13 @@ const SecretDisplay = ({
     }
   }
   return (
-    <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
-      {decryptedSecret}
-      {attachments}
-    </div>
+    <>
+      <div className={styles.description}>{senderLabel} sent you a secret</div>
+      <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
+        {decryptedSecret}
+        {attachments}
+      </div>
+    </>
   );
 };
 
@@ -246,6 +263,8 @@ const DisplayPage: NextPage<DisplayPageProps> = ({
   const passwordParam = router.query['password'];
   const password =
     typeof passwordParam === 'string' ? passwordParam : undefined;
+  const senderParam = router.query['sender'];
+  const sender = typeof senderParam === 'string' ? senderParam : undefined;
   const recordGeolocation = useMutation(api.recordAccessGeolocation.default);
   const recordGeolocationForFailure = useMutation(
     api.recordAccessGeolocation.forFailure
@@ -303,8 +322,12 @@ const DisplayPage: NextPage<DisplayPageProps> = ({
       whisperName={name}
       passwordHash={hashPassword(password)}
     >
-      Someone whispered this secret to you
-      <SecretDisplay name={name} accessKey={accessKey} password={password} />
+      <SecretDisplay
+        name={name}
+        accessKey={accessKey}
+        password={password}
+        senderFromURL={sender}
+      />
     </ExpirationWrapper>
   );
 };

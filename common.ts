@@ -9,6 +9,19 @@ export type CreateResponse = {
   password: string;
 };
 
+export function normalizeSender(
+  sender: string | null | undefined
+): string | undefined {
+  if (sender === undefined || sender === null) {
+    return undefined;
+  }
+  const trimmedSender = sender.trim();
+  if (trimmedSender.length === 0) {
+    return undefined;
+  }
+  return trimmedSender;
+}
+
 const encryptFile = async (blob: Blob, password: string): Promise<Blob> => {
   // i don't know how to invert blob.text() when the file isn't ascii, so use blob.arrayBuffer().
   const arrayBuffer = await blob.arrayBuffer();
@@ -24,6 +37,7 @@ export async function createWhisper(
   selectedFile: File | null,
   expiration: string,
   password: string,
+  sender: string,
   createWhisperMutation: ReactMutation<typeof api.createWhisper.default>,
   makeUploadURL: ReactMutation<typeof api.fileUploadURL.default>,
   requestGeolocation: boolean
@@ -63,6 +77,7 @@ export async function createWhisper(
     creatorKey,
     expiration,
     requestGeolocation,
+    sender: normalizeSender(sender),
   });
   return {
     password,
@@ -75,11 +90,21 @@ export function hashPassword(password: string): string {
   return CryptoJS.SHA256(password).toString();
 }
 
-export function makeURL(name: string, password: string | null): string {
+export function makeURL(
+  name: string,
+  password: string | null,
+  sender?: string | null
+): string {
   const currentURL = window.location;
   const baseURL = currentURL.protocol + '//' + currentURL.host;
-  if (password === null) {
-    return `${baseURL}/access?name=${name}`;
+  const params = new URLSearchParams();
+  params.set('name', name);
+  if (password !== null) {
+    params.set('password', password);
   }
-  return `${baseURL}/access?name=${name}&password=${password}`;
+  const normalizedSender = normalizeSender(sender);
+  if (normalizedSender !== undefined) {
+    params.set('sender', normalizedSender);
+  }
+  return `${baseURL}/access?${params.toString()}`;
 }
