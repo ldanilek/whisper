@@ -246,6 +246,11 @@ const DisplayPage: NextPage<DisplayPageProps> = ({
   const passwordParam = router.query['password'];
   const password =
     typeof passwordParam === 'string' ? passwordParam : undefined;
+  const senderParam = router.query['sender'];
+  const sender =
+    typeof senderParam === 'string' && senderParam.trim().length > 0
+      ? senderParam.trim()
+      : 'Someone';
   const recordGeolocation = useMutation(api.recordAccessGeolocation.default);
   const recordGeolocationForFailure = useMutation(
     api.recordAccessGeolocation.forFailure
@@ -303,7 +308,7 @@ const DisplayPage: NextPage<DisplayPageProps> = ({
       whisperName={name}
       passwordHash={hashPassword(password)}
     >
-      Someone whispered this secret to you
+      {`${sender} sent you a secret`}
       <SecretDisplay name={name} accessKey={accessKey} password={password} />
     </ExpirationWrapper>
   );
