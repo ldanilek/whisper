@@ -73,12 +73,14 @@ const SecretDisplay = ({
   accessKey: string;
   password: string;
 }) => {
-  const { encryptedSecret, encryptedSender, storageURLs } =
-    useQuery(api.readSecret.default, {
+  const { encryptedSecret, encryptedSender, storageURLs } = useQuery(
+    api.readSecret.default,
+    {
       whisperName: name,
       accessKey,
       passwordHash: hashPassword(password),
-    }) ?? { encryptedSecret: undefined, encryptedSender: null, storageURLs: {} };
+    }
+  ) ?? { encryptedSecret: undefined, encryptedSender: null, storageURLs: {} };
   if (!encryptedSecret) {
     return (
       <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
@@ -91,7 +93,8 @@ const SecretDisplay = ({
         .toString(CryptoJS.enc.Utf8)
         .trim()
     : '';
-  const senderDisplay = decryptedSender.length > 0 ? decryptedSender : 'Someone';
+  const senderDisplay =
+    decryptedSender.length > 0 ? decryptedSender : 'Someone';
   let decryptedSecret: string = CryptoJS.AES.decrypt(
     encryptedSecret,
     password
@@ -120,7 +123,9 @@ const SecretDisplay = ({
   }
   return (
     <>
-      <div className={styles.description}>{`${senderDisplay} sent you a secret`}</div>
+      <div
+        className={styles.description}
+      >{`${senderDisplay} sent you a secret`}</div>
       <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
         {decryptedSecret}
         {attachments}

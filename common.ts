@@ -55,7 +55,10 @@ export async function createWhisper(
     secret += `\nAttachment: '${name}' ${storageId}`;
   }
   const encryptedSecret = CryptoJS.AES.encrypt(secret, password).toString();
-  const encryptedSender = CryptoJS.AES.encrypt(sender.trim(), password).toString();
+  const encryptedSender = CryptoJS.AES.encrypt(
+    sender.trim(),
+    password
+  ).toString();
   const passwordHash = hashPassword(password);
   await createWhisperMutation({
     whisperName: name,
