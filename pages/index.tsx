@@ -11,6 +11,7 @@ import { api } from '../convex/_generated/api';
 const Home: NextPage = () => {
   const createWhisperMutation = useMutation(api.createWhisper.default);
   const [secret, setSecret] = useState('');
+  const [sender, setSender] = useState('');
   const [expiration, setExpiration] = useState(expirationOptions[0]);
   const [password, setPassword] = useState('');
   const [requestGeolocation, setRequestGeolocation] = useState(false);
@@ -20,6 +21,7 @@ const Home: NextPage = () => {
   const create = async () => {
     const createResponse = await createWhisper(
       secret,
+      sender,
       selectedFile,
       expiration,
       password,
@@ -40,6 +42,16 @@ const Home: NextPage = () => {
         value={secret}
         onChange={(e) => setSecret(e.target.value)}
       />
+      <div>
+        sender{' '}
+        <input
+          type="text"
+          className={styles.passwordInput}
+          placeholder="your name (optional)"
+          value={sender}
+          onChange={(e) => setSender(e.target.value)}
+        />
+      </div>
       <div>
         attach secret file{' '}
         <input
