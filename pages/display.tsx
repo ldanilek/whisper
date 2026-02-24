@@ -2,7 +2,7 @@ import type { GetServerSideProps, NextPage } from 'next';
 import styles from '../styles/Home.module.css';
 import { useQuery, useMutation } from 'convex/react';
 import { useState, useEffect } from 'react';
-import { hashPassword } from '../common';
+import { decodeSenderSecret, hashPassword } from '../common';
 import { useRouter } from 'next/router';
 import Whisper from '../whisper';
 import React from 'react';
@@ -77,7 +77,7 @@ const SecretDisplay = ({
     whisperName: name,
     accessKey,
     passwordHash: hashPassword(password),
-  }) ?? { encryptedSecret: undefined, storageURLs: [] };
+  }) ?? { encryptedSecret: undefined, storageURLs: {} };
   if (!encryptedSecret) {
     return (
       <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
@@ -89,6 +89,9 @@ const SecretDisplay = ({
     encryptedSecret,
     password
   ).toString(CryptoJS.enc.Utf8);
+  const { sender: decryptedSender, secret } =
+    decodeSenderSecret(decryptedSecret);
+  decryptedSecret = secret;
   const attachments = [];
   for (const [storageId, url] of Object.entries(storageURLs)) {
     console.log('storageURL', url);
@@ -112,10 +115,15 @@ const SecretDisplay = ({
     }
   }
   return (
-    <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
-      {decryptedSecret}
-      {attachments}
-    </div>
+    <>
+      <div className={styles.description}>
+        {decryptedSender} sent you a secret
+      </div>
+      <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
+        {decryptedSecret}
+        {attachments}
+      </div>
+    </>
   );
 };
 
@@ -303,7 +311,6 @@ const DisplayPage: NextPage<DisplayPageProps> = ({
       whisperName={name}
       passwordHash={hashPassword(password)}
     >
-      Someone whispered this secret to you
       <SecretDisplay name={name} accessKey={accessKey} password={password} />
     </ExpirationWrapper>
   );

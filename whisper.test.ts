@@ -2,6 +2,7 @@ import { convexTest } from 'convex-test';
 import { test, expect } from 'vitest';
 import { api } from './convex/_generated/api';
 import schema from './convex/schema';
+import { decodeSenderSecret, encodeSenderSecret } from './common';
 
 // @ts-expect-error import.meta.glob types
 export const modules = import.meta.glob('./convex/**/!(*.*.*)*.*s');
@@ -48,4 +49,14 @@ test('full whisper flow', async () => {
 
   expect(result.encryptedSecret).toBe(encryptedSecret);
   expect(result.storageURLs).toEqual({});
+});
+
+test('sender metadata codec', () => {
+  const encoded = encodeSenderSecret('codec secret', 'Taylor');
+  const decoded = decodeSenderSecret(encoded);
+  expect(decoded.sender).toBe('Taylor');
+  expect(decoded.secret).toBe('codec secret');
+  const legacy = decodeSenderSecret('legacy secret');
+  expect(legacy.sender).toBe('Someone');
+  expect(legacy.secret).toBe('legacy secret');
 });
