@@ -41,7 +41,7 @@ const AccessButton = ({
   const router = useRouter();
   return (
     <>
-      A secret was shared with you
+      Someone whispered a secret to you
       <button
         className={styles.button}
         onClick={() => {
