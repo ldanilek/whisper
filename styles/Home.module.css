@@ -52,6 +52,190 @@
     border-color 0.3s ease;
 }
 
+.secretOutputMarkdown {
+  font-family: inherit;
+  white-space: normal;
+}
+
+.editorShell {
+  width: 95%;
+  display: flex;
+  flex-direction: column;
+}
+
+.editorToolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  border: 1px solid var(--border-color-dark);
+  border-radius: 8px;
+  padding: 0.2rem;
+  background: var(--bg-primary);
+  margin-bottom: 0.3rem;
+}
+
+.editorModeToggle {
+  display: flex;
+  border: 1px solid var(--border-color-dark);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-right: 0.3rem;
+}
+
+.editorModeButton {
+  border: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.78rem;
+}
+
+.editorModeButtonActive {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.editorToolbarButton {
+  border: 1px solid var(--border-color-dark);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  cursor: pointer;
+  min-width: 1.7rem;
+  height: 1.7rem;
+}
+
+.editorToolbarHint {
+  color: var(--text-tertiary);
+  font-size: 0.75rem;
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.editorMenu {
+  border: 1px solid var(--border-color-dark);
+  border-radius: 8px;
+  padding: 0.35rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.3rem;
+  background: var(--bg-primary);
+}
+
+.editorMenuItem {
+  border: 1px solid var(--border-color-dark);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 0.76rem;
+  padding: 0.2rem 0.45rem;
+}
+
+.editorInput {
+  min-height: 9rem;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.editorHint {
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+  margin-bottom: 0.4rem;
+}
+
+.attachmentOrderRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.4rem;
+}
+
+.attachmentOrderItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border: 1px solid var(--border-color-dark);
+  border-radius: 999px;
+  padding: 0.15rem 0.45rem;
+  font-size: 0.75rem;
+  cursor: grab;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.attachmentOrderRemove {
+  border: 0;
+  background: transparent;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 0;
+}
+
+.editorPreview {
+  min-height: 4rem;
+  white-space: normal;
+  font-family: inherit;
+}
+
+.editorPreviewMarkdown {
+  line-height: 1.45;
+}
+
+.editorMarkdownSegment {
+  display: inline;
+}
+
+.editorMarkdownSegment :global(h1),
+.editorMarkdownSegment :global(h2),
+.editorMarkdownSegment :global(h3),
+.editorMarkdownSegment :global(h4),
+.editorMarkdownSegment :global(h5),
+.editorMarkdownSegment :global(h6),
+.editorMarkdownSegment :global(p) {
+  margin: 0;
+}
+
+.editorPlainSegment {
+  white-space: pre-wrap;
+}
+
+.inlineAttachment {
+  display: inline-flex;
+  vertical-align: middle;
+  margin: 0 0.2rem;
+  align-items: center;
+}
+
+.inlineAttachmentImage {
+  max-width: min(18rem, 65vw);
+  max-height: 10rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color-dark);
+  object-fit: contain;
+}
+
+.inlineAttachmentFile {
+  display: inline-block;
+  border: 1px solid var(--border-color-dark);
+  border-radius: 999px;
+  padding: 0.15rem 0.55rem;
+  font-size: 0.75rem;
+}
+
+.attachmentMissing,
+.attachmentLoading {
+  color: var(--text-tertiary);
+  font-size: 0.8rem;
+}
+
 .copiable {
   margin-left: 0.5em;
   margin-right: 0.5em;
