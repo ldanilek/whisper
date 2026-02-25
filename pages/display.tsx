@@ -10,6 +10,7 @@ import { ConvexHttpClient } from 'convex/browser';
 import { api } from '../convex/_generated/api';
 import CryptoJS from 'crypto-js';
 import { v4 as uuidv4 } from 'uuid';
+import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -84,11 +85,18 @@ const Attachment = ({
   if (kind === 'image') {
     return (
       <span className={styles.inlineAttachment}>
-        <a className={styles.secretAttachment} href={blobURL} download={filename}>
-          <img
+        <a
+          className={styles.secretAttachment}
+          href={blobURL}
+          download={filename}
+        >
+          <Image
             className={styles.inlineAttachmentImage}
             src={blobURL}
             alt={filename}
+            width={480}
+            height={320}
+            unoptimized
           />
         </a>
       </span>
@@ -176,14 +184,14 @@ const SecretDisplay = ({
       }
       if (mode === 'markdown') {
         return (
-          <ReactMarkdown
-            key={`text-${index}`}
-            className={styles.editorMarkdownSegment}
-            remarkPlugins={[remarkGfm, remarkMath]}
-            rehypePlugins={[rehypeKatex]}
-          >
-            {part.value}
-          </ReactMarkdown>
+          <span key={`text-${index}`} className={styles.editorMarkdownSegment}>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm, remarkMath]}
+              rehypePlugins={[rehypeKatex]}
+            >
+              {part.value}
+            </ReactMarkdown>
+          </span>
         );
       }
       return (
@@ -200,7 +208,9 @@ const SecretDisplay = ({
         </span>
       );
     }
-    const filename = Buffer.from(attachment.fileNameHex, 'hex').toString('utf8');
+    const filename = Buffer.from(attachment.fileNameHex, 'hex').toString(
+      'utf8'
+    );
     return (
       <Attachment
         key={`attachment-${index}`}

@@ -16,6 +16,7 @@ import { useRouter } from 'next/router';
 import Whisper from '../whisper';
 import { api } from '../convex/_generated/api';
 import { v4 as uuidv4 } from 'uuid';
+import Image from 'next/image';
 import {
   WhisperContentMode,
   collectAttachmentTokenIds,
@@ -43,15 +44,20 @@ const InlineAttachmentPreview = ({
   if (attachment.kind === 'image') {
     return (
       <span className={styles.inlineAttachment}>
-        <img
+        <Image
           className={styles.inlineAttachmentImage}
           src={blobURL}
           alt={attachment.file.name}
+          width={480}
+          height={320}
+          unoptimized
         />
       </span>
     );
   }
-  return <span className={styles.inlineAttachmentFile}>{attachment.file.name}</span>;
+  return (
+    <span className={styles.inlineAttachmentFile}>{attachment.file.name}</span>
+  );
 };
 
 const Home: NextPage = () => {
@@ -81,7 +87,9 @@ const Home: NextPage = () => {
   }, [secretMode]);
 
   useEffect(() => {
-    const referencedAttachmentIds = new Set(collectAttachmentTokenIds(secretBody));
+    const referencedAttachmentIds = new Set(
+      collectAttachmentTokenIds(secretBody)
+    );
     setAttachments((current) =>
       current.filter((attachment) => referencedAttachmentIds.has(attachment.id))
     );
@@ -120,9 +128,15 @@ const Home: NextPage = () => {
     const start = secretRef.current.selectionStart;
     const end = secretRef.current.selectionEnd;
     const selected = secretBody.slice(start, end);
-    const nextBody = `${secretBody.slice(0, start)}${prefix}${selected}${suffix}${secretBody.slice(end)}`;
+    const nextBody = `${secretBody.slice(
+      0,
+      start
+    )}${prefix}${selected}${suffix}${secretBody.slice(end)}`;
     setSecretBody(nextBody);
-    setSelection(start + prefix.length, start + prefix.length + selected.length);
+    setSelection(
+      start + prefix.length,
+      start + prefix.length + selected.length
+    );
   };
 
   const addHeader = () => {
@@ -131,7 +145,9 @@ const Home: NextPage = () => {
     }
     const cursor = secretRef.current.selectionStart;
     const lineStart = secretBody.lastIndexOf('\n', Math.max(cursor - 1, 0)) + 1;
-    const nextBody = `${secretBody.slice(0, lineStart)}# ${secretBody.slice(lineStart)}`;
+    const nextBody = `${secretBody.slice(0, lineStart)}# ${secretBody.slice(
+      lineStart
+    )}`;
     setSecretBody(nextBody);
     const nextCursor = cursor + 2;
     setSelection(nextCursor, nextCursor);
@@ -145,7 +161,9 @@ const Home: NextPage = () => {
     const end = secretRef.current.selectionEnd;
     const selected = secretBody.slice(start, end) || 'link text';
     const snippet = `[${selected}](https://)`;
-    const nextBody = `${secretBody.slice(0, start)}${snippet}${secretBody.slice(end)}`;
+    const nextBody = `${secretBody.slice(0, start)}${snippet}${secretBody.slice(
+      end
+    )}`;
     setSecretBody(nextBody);
     const cursorStart = start + snippet.length - 1;
     const cursorEnd = cursorStart;
@@ -171,7 +189,9 @@ const Home: NextPage = () => {
     for (const file of files) {
       const attachmentId = uuidv4();
       const token = makeAttachmentToken(attachmentId);
-      nextBody = `${nextBody.slice(0, cursor)}${token}${nextBody.slice(cursor)}`;
+      nextBody = `${nextBody.slice(0, cursor)}${token}${nextBody.slice(
+        cursor
+      )}`;
       cursor += token.length;
       nextAttachments.push({
         id: attachmentId,
@@ -388,16 +408,19 @@ const Home: NextPage = () => {
           </div>
         ) : null}
         <div
-          className={`${styles.secretDisplay} ${styles.secretOutput} ${styles.editorPreview} ${
-            secretMode === 'markdown' ? styles.editorPreviewMarkdown : ''
-          }`}
+          className={`${styles.secretDisplay} ${styles.secretOutput} ${
+            styles.editorPreview
+          } ${secretMode === 'markdown' ? styles.editorPreviewMarkdown : ''}`}
         >
           {bodyParts.map((part, index) => {
             if (part.type === 'attachment') {
               const attachment = attachmentsById[part.id];
               if (!attachment) {
                 return (
-                  <span key={`${part.id}-${index}`} className={styles.attachmentMissing}>
+                  <span
+                    key={`${part.id}-${index}`}
+                    className={styles.attachmentMissing}
+                  >
                     [missing attachment]
                   </span>
                 );
@@ -414,14 +437,17 @@ const Home: NextPage = () => {
             }
             if (secretMode === 'markdown') {
               return (
-                <ReactMarkdown
+                <span
                   key={`text-${index}`}
                   className={styles.editorMarkdownSegment}
-                  remarkPlugins={[remarkGfm, remarkMath]}
-                  rehypePlugins={[rehypeKatex]}
                 >
-                  {part.value}
-                </ReactMarkdown>
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm, remarkMath]}
+                    rehypePlugins={[rehypeKatex]}
+                  >
+                    {part.value}
+                  </ReactMarkdown>
+                </span>
               );
             }
             return (

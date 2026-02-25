@@ -49,7 +49,8 @@ export const splitBodyByAttachmentTokens = (body: string): Array<BodyPart> => {
   const parts: Array<BodyPart> = [];
   let lastIndex = 0;
   const regex = new RegExp(attachmentTokenPattern.source, 'g');
-  for (const match of body.matchAll(regex)) {
+  let match = regex.exec(body);
+  while (match) {
     const start = match.index ?? 0;
     if (start > lastIndex) {
       parts.push({
@@ -62,6 +63,7 @@ export const splitBodyByAttachmentTokens = (body: string): Array<BodyPart> => {
       id: match[1],
     });
     lastIndex = start + match[0].length;
+    match = regex.exec(body);
   }
   if (lastIndex < body.length || body.length === 0) {
     parts.push({
@@ -73,9 +75,14 @@ export const splitBodyByAttachmentTokens = (body: string): Array<BodyPart> => {
 };
 
 export const collectAttachmentTokenIds = (body: string): Array<string> => {
-  return [...body.matchAll(new RegExp(attachmentTokenPattern.source, 'g'))].map(
-    (match) => match[1]
-  );
+  const regex = new RegExp(attachmentTokenPattern.source, 'g');
+  const ids: Array<string> = [];
+  let match = regex.exec(body);
+  while (match) {
+    ids.push(match[1]);
+    match = regex.exec(body);
+  }
+  return ids;
 };
 
 export const reorderAttachmentTokens = (
