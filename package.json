@@ -12,10 +12,15 @@
     "concurrently": "^7.6.0",
     "convex": "https://github.com/ldanilek/convex-backend/releases/download/convex-preview-20260219-195445/convex-1.32.0.tgz",
     "crypto-js": "^4.1.1",
+    "katex": "^0.16.33",
     "next": "latest",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "latest",
+    "rehype-katex": "^7.0.1",
+    "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0",
     "uuid": "^9.0.0"
   },
   "devDependencies": {

@@ -1,7 +1,7 @@
 import type { GetServerSideProps, NextPage } from 'next';
 import styles from '../styles/Home.module.css';
 import { useQuery, useMutation } from 'convex/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { hashPassword } from '../common';
 import { useRouter } from 'next/router';
 import Whisper from '../whisper';
@@ -10,15 +10,29 @@ import { ConvexHttpClient } from 'convex/browser';
 import { api } from '../convex/_generated/api';
 import CryptoJS from 'crypto-js';
 import { v4 as uuidv4 } from 'uuid';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import {
+  decodeWhisperPayload,
+  makeAttachmentToken,
+  splitBodyByAttachmentTokens,
+  StoredAttachment,
+} from '../secretPayload';
 
 const Attachment = ({
   url,
   filename,
   password,
+  kind,
+  contentType,
 }: {
   url: string | null;
   filename: string;
   password: string;
+  kind: 'image' | 'file';
+  contentType: string;
 }) => {
   const [fileBlob, setFileBlob] = useState<Blob | null>(null);
   filename = filename ? filename : 'unnamed';
@@ -32,31 +46,56 @@ const Attachment = ({
       const decrypted = CryptoJS.AES.decrypt(encrypted, password);
       const decryptedStr = decrypted.toString(CryptoJS.enc.Utf8); // this is also base64
       const decoded = Buffer.from(decryptedStr, 'base64');
-      const blob = new Blob([decoded]);
+      const blob = new Blob([decoded], { type: contentType });
       setFileBlob(blob);
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [url, filename]);
+  }, [url, filename, password, contentType]);
+  const blobURL = useMemo(() => {
+    if (!fileBlob) {
+      return null;
+    }
+    return window.URL.createObjectURL(fileBlob);
+  }, [fileBlob]);
+  useEffect(() => {
+    if (!blobURL) {
+      return;
+    }
+    return () => {
+      window.URL.revokeObjectURL(blobURL);
+    };
+  }, [blobURL]);
   if (url === null) {
     return (
-      <span>
-        <br />
-        {`missing attachment '${filename}'`}
+      <span className={styles.attachmentMissing}>
+        {`[missing attachment '${filename}']`}
       </span>
     );
   }
   if (fileBlob === null) {
     return (
-      <span>
-        <br />
-        {`Loading attachment ${filename}`}
+      <span className={styles.attachmentLoading}>
+        {`[loading attachment ${filename}]`}
       </span>
     );
   }
-  const blobURL = window.URL.createObjectURL(fileBlob);
+  if (blobURL === null) {
+    return null;
+  }
+  if (kind === 'image') {
+    return (
+      <span className={styles.inlineAttachment}>
+        <a className={styles.secretAttachment} href={blobURL} download={filename}>
+          <img
+            className={styles.inlineAttachmentImage}
+            src={blobURL}
+            alt={filename}
+          />
+        </a>
+      </span>
+    );
+  }
   return (
-    <span>
-      <br />
+    <span className={styles.inlineAttachment}>
       <a className={styles.secretAttachment} href={blobURL} download={filename}>
         {filename}
       </a>
@@ -95,41 +134,90 @@ const SecretDisplay = ({
     : '';
   const senderDisplay =
     decryptedSender.length > 0 ? decryptedSender : 'Someone';
-  let decryptedSecret: string = CryptoJS.AES.decrypt(
+  const decryptedSecret: string = CryptoJS.AES.decrypt(
     encryptedSecret,
     password
   ).toString(CryptoJS.enc.Utf8);
-  const attachments = [];
-  for (const [storageId, url] of Object.entries(storageURLs)) {
-    console.log('storageURL', url);
-    const matches =
-      decryptedSecret.match(
-        new RegExp(`Attachment: '[0-9a-fA-F]*' ${storageId}`)
-      ) ?? [];
-    for (const match of matches) {
-      let filenameHex = match.match(/'[0-9a-fA-F]*'/)![0];
-      filenameHex = filenameHex.slice(1, filenameHex.length - 1);
-      const filename = Buffer.from(filenameHex, 'hex').toString();
-      attachments.push(
-        <Attachment
-          key={storageId}
-          url={url}
-          filename={filename}
-          password={password}
-        />
+  const attachmentById: Record<string, StoredAttachment> = {};
+  let mode: 'plain' | 'markdown' = 'plain';
+  let body = decryptedSecret;
+  const payload = decodeWhisperPayload(decryptedSecret);
+  if (payload) {
+    mode = payload.mode;
+    body = payload.body;
+    for (const attachment of payload.attachments) {
+      attachmentById[attachment.id] = attachment;
+    }
+  } else {
+    for (const storageId of Object.keys(storageURLs)) {
+      const markerRegex = new RegExp(
+        `Attachment: '([0-9a-fA-F]*)' ${storageId}`,
+        'g'
       );
-      decryptedSecret = decryptedSecret.replace(match, '');
+      body = body.replace(markerRegex, (_, fileNameHex: string) => {
+        attachmentById[storageId] = {
+          id: storageId,
+          storageId,
+          fileNameHex,
+          contentType: 'application/octet-stream',
+          kind: 'file',
+        };
+        return makeAttachmentToken(storageId);
+      });
     }
   }
+  const outputClassName = `${styles.secretDisplay} ${styles.secretOutput} ${
+    mode === 'markdown' ? styles.secretOutputMarkdown : ''
+  }`;
+  const renderedParts = splitBodyByAttachmentTokens(body).map((part, index) => {
+    if (part.type === 'text') {
+      if (part.value.length === 0) {
+        return null;
+      }
+      if (mode === 'markdown') {
+        return (
+          <ReactMarkdown
+            key={`text-${index}`}
+            className={styles.editorMarkdownSegment}
+            remarkPlugins={[remarkGfm, remarkMath]}
+            rehypePlugins={[rehypeKatex]}
+          >
+            {part.value}
+          </ReactMarkdown>
+        );
+      }
+      return (
+        <span key={`text-${index}`} className={styles.editorPlainSegment}>
+          {part.value}
+        </span>
+      );
+    }
+    const attachment = attachmentById[part.id];
+    if (!attachment) {
+      return (
+        <span key={`missing-${index}`} className={styles.attachmentMissing}>
+          [missing attachment]
+        </span>
+      );
+    }
+    const filename = Buffer.from(attachment.fileNameHex, 'hex').toString('utf8');
+    return (
+      <Attachment
+        key={`attachment-${index}`}
+        url={storageURLs[attachment.storageId] ?? null}
+        filename={filename}
+        password={password}
+        kind={attachment.kind}
+        contentType={attachment.contentType}
+      />
+    );
+  });
   return (
     <>
       <div
         className={styles.description}
       >{`${senderDisplay} whispered this secret to you`}</div>
-      <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
-        {decryptedSecret}
-        {attachments}
-      </div>
+      <div className={outputClassName}>{renderedParts}</div>
     </>
   );
 };

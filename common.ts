@@ -2,11 +2,22 @@ import { ReactMutation } from 'convex/react';
 import { api } from './convex/_generated/api';
 import { v4 as uuidv4 } from 'uuid';
 import CryptoJS from 'crypto-js';
+import {
+  WhisperContentMode,
+  encodeWhisperPayload,
+  StoredAttachment,
+} from './secretPayload';
 
 export type CreateResponse = {
   name: string;
   creatorKey: string;
   password: string;
+};
+
+export type DraftWhisperAttachment = {
+  id: string;
+  file: File;
+  kind: 'image' | 'file';
 };
 
 const encryptFile = async (blob: Blob, password: string): Promise<Blob> => {
@@ -20,9 +31,10 @@ const encryptFile = async (blob: Blob, password: string): Promise<Blob> => {
 };
 
 export async function createWhisper(
-  secret: string,
+  secretBody: string,
+  secretMode: WhisperContentMode,
+  attachments: Array<DraftWhisperAttachment>,
   sender: string,
-  selectedFile: File | null,
   expiration: string,
   password: string,
   createWhisperMutation: ReactMutation<typeof api.createWhisper.default>,
@@ -34,12 +46,11 @@ export async function createWhisper(
   if (password.length === 0) {
     password = uuidv4();
   }
-  const storageIds = [];
-  if (selectedFile) {
-    const [uploadURL, encryptedFile] = await Promise.all([
-      makeUploadURL(),
-      encryptFile(selectedFile, password),
-    ]);
+  const storageIds: Array<string> = [];
+  const storedAttachments: Array<StoredAttachment> = [];
+  for (const attachment of attachments) {
+    const uploadURL = await makeUploadURL();
+    const encryptedFile = await encryptFile(attachment.file, password);
     const result = await fetch(uploadURL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/octet-stream' },
@@ -47,14 +58,31 @@ export async function createWhisper(
     });
     const resultJson = await result.json();
     if (!result.ok) {
-      console.error(resultJson);
+      throw new Error(
+        `failed uploading attachment ${attachment.file.name}: ${JSON.stringify(
+          resultJson
+        )}`
+      );
     }
     const storageId = resultJson['storageId'];
     storageIds.push(storageId);
-    const name = Buffer.from(selectedFile.name, 'ascii').toString('hex');
-    secret += `\nAttachment: '${name}' ${storageId}`;
+    storedAttachments.push({
+      id: attachment.id,
+      storageId,
+      fileNameHex: Buffer.from(attachment.file.name, 'utf8').toString('hex'),
+      contentType: attachment.file.type || 'application/octet-stream',
+      kind: attachment.kind,
+    });
   }
-  const encryptedSecret = CryptoJS.AES.encrypt(secret, password).toString();
+  const encryptedSecret = CryptoJS.AES.encrypt(
+    encodeWhisperPayload({
+      version: 2,
+      mode: secretMode,
+      body: secretBody,
+      attachments: storedAttachments,
+    }),
+    password
+  ).toString();
   const encryptedSender = CryptoJS.AES.encrypt(
     sender.trim(),
     password
