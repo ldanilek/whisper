@@ -53,11 +53,13 @@ Next.js reads `NEXT_PUBLIC_CONVEX_URL` from `.env.local` (or `.env` as fallback)
 
 - **Lint**: `npm run lint` (ESLint + Prettier)
 - **Test**: `npm test` (Vitest with `convex-test`; tests run in-memory, no Convex backend needed)
+- **Test (no watch / one-shot)**: `npx vitest run` (all tests) or `npx vitest run whisper.test.ts` (single file)
 - **Build**: `npm run build`
 
 ### Caveats
 
 - `npm ci` may fail if `package-lock.json` is out of sync with `package.json`. The update script uses `npm install` instead.
+- `npm test -- --run whisper.test.ts` may hang in this environment. Use `npx vitest run whisper.test.ts` for a foreground one-shot run that exits.
 - Watchpack permission warnings (e.g. `/etc/credstore`, `/root/.ssh`) in Next.js dev output are harmless and can be ignored.
 - `SSR_KEY` must match between the Next.js server env and the Convex deployment env. The update script sets both to `cloud-agent-ssr-key`. Without `SSR_KEY`, the `/display` page (viewing a whisper) will error.
 - The `/display` page uses SSR (`getServerSideProps`) to call `accessWhisper` with the `SSR_KEY`, so it only works when `SSR_KEY` is correctly configured on both sides.
