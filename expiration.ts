@@ -4,12 +4,27 @@ import { DatabaseReader } from './convex/_generated/server';
 import { api } from './convex/_generated/api';
 import { ConvexError } from 'convex/values';
 
+const accessCountOptions: [string, number][] = [
+  ['after one access', 1],
+  ['after two accesses', 2],
+  ['after three accesses', 3],
+  ['after five accesses', 5],
+  ['after ten accesses', 10],
+];
+
+const durationOptions: [string, number][] = [
+  // ['after 20 seconds', 20 * 1000], // for testing
+  ['after five minutes', 5 * 60 * 1000],
+  ['after fifteen minutes', 15 * 60 * 1000],
+  ['after one hour', 60 * 60 * 1000],
+  ['after one day', 24 * 60 * 60 * 1000],
+  ['after three days', 3 * 24 * 60 * 60 * 1000],
+  ['after one week', 7 * 24 * 60 * 60 * 1000],
+];
+
 export const expirationOptions = [
-  'after one access',
-  // 'after 20 seconds', // for testing
-  'after ten accesses',
-  'after five minutes',
-  'after one week',
+  ...accessCountOptions.map(([label]) => label),
+  ...durationOptions.map(([label]) => label),
   'never',
 ];
 
@@ -25,18 +40,19 @@ type Expiration = {
   afterFailedAccesses?: boolean;
 };
 
+const accessCountByOption = new Map(accessCountOptions);
+const durationByOption = new Map(durationOptions);
+
 export function optionToExpiration(option: string): Expiration {
+  const accessCount = accessCountByOption.get(option);
+  if (accessCount !== undefined) {
+    return { afterAccessCount: accessCount };
+  }
+  const duration = durationByOption.get(option);
+  if (duration !== undefined) {
+    return { afterDuration: duration };
+  }
   switch (option) {
-    case 'after one access':
-      return { afterAccessCount: 1 };
-    case 'after ten accesses':
-      return { afterAccessCount: 10 };
-    case 'after 20 seconds':
-      return { afterDuration: 20 * 1000 };
-    case 'after five minutes':
-      return { afterDuration: 5 * 60 * 1000 };
-    case 'after one week':
-      return { afterDuration: 7 * 24 * 60 * 60 * 1000 };
     case 'never':
       return { never: true };
     case directExpirationOption:
