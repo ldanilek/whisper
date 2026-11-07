@@ -19,10 +19,114 @@ const encryptFile = async (blob: Blob, password: string): Promise<Blob> => {
   return new Blob([encryptedEncoded]);
 };
 
+// Same on-the-wire line the recipient already parses. The filename is hex so
+// quotes, spaces, and newlines in the name cannot break the line.
+export function formatAttachmentLine(
+  filename: string,
+  storageId: string
+): string {
+  const filenameHex = Buffer.from(filename, 'ascii').toString('hex');
+  return `Attachment: '${filenameHex}' ${storageId}`;
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+type AttachmentMatch = {
+  secret: string;
+  filename: string;
+  index: number;
+};
+
+// Removes one attachment line for storageId and returns the decoded filename.
+// Storage ids are matched exactly so one id cannot consume another file's line.
+function findAttachment(
+  secret: string,
+  storageId: string
+): AttachmentMatch | null {
+  const pattern = new RegExp(
+    `Attachment: '([0-9a-fA-F]*)' ${escapeRegExp(storageId)}(?![0-9A-Za-z_])`
+  );
+  const match = secret.match(pattern);
+  if (!match || match.index === undefined) {
+    return null;
+  }
+  const filename = Buffer.from(match[1] ?? '', 'hex').toString();
+  return {
+    secret:
+      secret.slice(0, match.index) +
+      secret.slice(match.index + match[0].length),
+    filename,
+    index: match.index,
+  };
+}
+
+export function takeAttachment(
+  secret: string,
+  storageId: string
+): { secret: string; filename: string } | null {
+  const found = findAttachment(secret, storageId);
+  if (!found) {
+    return null;
+  }
+  return { secret: found.secret, filename: found.filename };
+}
+
+export function listAttachments(
+  secret: string,
+  storageURLs: Record<string, string | null>
+): {
+  secret: string;
+  attachments: Array<{
+    storageId: string;
+    filename: string;
+    url: string | null;
+  }>;
+} {
+  const attachments: Array<{
+    storageId: string;
+    filename: string;
+    url: string | null;
+  }> = [];
+  let remaining = secret;
+  let pending = Object.keys(storageURLs);
+  while (pending.length > 0) {
+    let next: { storageId: string; index: number } | null = null;
+    const stillPending: string[] = [];
+    for (const storageId of pending) {
+      const taken = findAttachment(remaining, storageId);
+      if (!taken) {
+        continue;
+      }
+      stillPending.push(storageId);
+      if (next === null || taken.index < next.index) {
+        next = { storageId, index: taken.index };
+      }
+    }
+    if (!next) {
+      break;
+    }
+    const taken = findAttachment(remaining, next.storageId);
+    if (!taken) {
+      break;
+    }
+    const storageId = next.storageId;
+    remaining = taken.secret;
+    attachments.push({
+      storageId,
+      filename: taken.filename,
+      url: storageURLs[storageId],
+    });
+    pending = stillPending.filter((id) => id !== storageId);
+  }
+  return { secret: remaining, attachments };
+}
+
 export async function createWhisper(
   secret: string,
   sender: string,
-  selectedFile: File | null,
+  selectedFiles: File[],
   expiration: string,
   password: string,
   createWhisperMutation: ReactMutation<typeof api.createWhisper.default>,
@@ -34,25 +138,34 @@ export async function createWhisper(
   if (password.length === 0) {
     password = uuidv4();
   }
-  const storageIds = [];
-  if (selectedFile) {
-    const [uploadURL, encryptedFile] = await Promise.all([
-      makeUploadURL(),
-      encryptFile(selectedFile, password),
-    ]);
-    const result = await fetch(uploadURL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/octet-stream' },
-      body: encryptedFile,
-    });
-    const resultJson = await result.json();
-    if (!result.ok) {
-      console.error(resultJson);
-    }
-    const storageId = resultJson['storageId'];
-    storageIds.push(storageId);
-    const name = Buffer.from(selectedFile.name, 'ascii').toString('hex');
-    secret += `\nAttachment: '${name}' ${storageId}`;
+  const uploaded = await Promise.all(
+    selectedFiles.map(async (file) => {
+      const [uploadURL, encryptedFile] = await Promise.all([
+        makeUploadURL(),
+        encryptFile(file, password),
+      ]);
+      const result = await fetch(uploadURL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/octet-stream' },
+        body: encryptedFile,
+      });
+      const resultJson = await result.json();
+      if (!result.ok) {
+        console.error(resultJson);
+      }
+      const storageId = resultJson['storageId'];
+      if (typeof storageId !== 'string' || storageId.length === 0) {
+        throw new Error(`failed to upload ${file.name}`);
+      }
+      return {
+        storageId,
+        line: formatAttachmentLine(file.name, storageId),
+      };
+    })
+  );
+  const storageIds = uploaded.map((file) => file.storageId);
+  for (const file of uploaded) {
+    secret += `\n${file.line}`;
   }
   const encryptedSecret = CryptoJS.AES.encrypt(secret, password).toString();
   const encryptedSender = CryptoJS.AES.encrypt(

@@ -2,7 +2,7 @@ import type { GetServerSideProps, NextPage } from 'next';
 import styles from '../styles/Home.module.css';
 import { useQuery, useMutation } from 'convex/react';
 import { useState, useEffect } from 'react';
-import { hashPassword } from '../common';
+import { hashPassword, listAttachments } from '../common';
 import { useRouter } from 'next/router';
 import Whisper from '../whisper';
 import React from 'react';
@@ -95,39 +95,26 @@ const SecretDisplay = ({
     : '';
   const senderDisplay =
     decryptedSender.length > 0 ? decryptedSender : 'Someone';
-  let decryptedSecret: string = CryptoJS.AES.decrypt(
+  const decryptedSecret: string = CryptoJS.AES.decrypt(
     encryptedSecret,
     password
   ).toString(CryptoJS.enc.Utf8);
-  const attachments = [];
-  for (const [storageId, url] of Object.entries(storageURLs)) {
-    console.log('storageURL', url);
-    const matches =
-      decryptedSecret.match(
-        new RegExp(`Attachment: '[0-9a-fA-F]*' ${storageId}`)
-      ) ?? [];
-    for (const match of matches) {
-      let filenameHex = match.match(/'[0-9a-fA-F]*'/)![0];
-      filenameHex = filenameHex.slice(1, filenameHex.length - 1);
-      const filename = Buffer.from(filenameHex, 'hex').toString();
-      attachments.push(
-        <Attachment
-          key={storageId}
-          url={url}
-          filename={filename}
-          password={password}
-        />
-      );
-      decryptedSecret = decryptedSecret.replace(match, '');
-    }
-  }
+  const parsed = listAttachments(decryptedSecret, storageURLs);
+  const attachments = parsed.attachments.map((attachment) => (
+    <Attachment
+      key={attachment.storageId}
+      url={attachment.url}
+      filename={attachment.filename}
+      password={password}
+    />
+  ));
   return (
     <>
       <div
         className={styles.description}
       >{`${senderDisplay} whispered this secret to you`}</div>
       <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
-        {decryptedSecret}
+        {parsed.secret}
         {attachments}
       </div>
     </>

@@ -1,7 +1,7 @@
 import type { NextPage } from 'next';
 import styles from '../styles/Home.module.css';
 import { useMutation } from 'convex/react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { createWhisper } from '../common';
 import { expirationOptions } from '../expiration';
 import { useRouter } from 'next/router';
@@ -16,22 +16,51 @@ const Home: NextPage = () => {
   const [password, setPassword] = useState('');
   const [requestGeolocation, setRequestGeolocation] = useState(false);
   const router = useRouter();
-  const [selectedFile, setSelectedFile] = useState<null | File>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const makeUploadURL = useMutation(api.fileUploadURL.default);
+  const addFiles = (fileList: FileList | null) => {
+    if (!fileList || fileList.length === 0) {
+      return;
+    }
+    const added = Array.from(fileList);
+    setSelectedFiles((current) => [...current, ...added]);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+  const removeFile = (index: number) => {
+    setSelectedFiles((current) => current.filter((_, i) => i !== index));
+  };
   const create = async () => {
-    const createResponse = await createWhisper(
-      secret,
-      sender,
-      selectedFile,
-      expiration,
-      password,
-      createWhisperMutation,
-      makeUploadURL,
-      requestGeolocation
-    );
-    router.push(
-      `/created?name=${createResponse.name}&creatorKey=${createResponse.creatorKey}&password=${createResponse.password}`
-    );
+    if (creating) {
+      return;
+    }
+    setCreating(true);
+    setCreateError(null);
+    try {
+      const createResponse = await createWhisper(
+        secret,
+        sender,
+        selectedFiles,
+        expiration,
+        password,
+        createWhisperMutation,
+        makeUploadURL,
+        requestGeolocation
+      );
+      await router.push(
+        `/created?name=${createResponse.name}&creatorKey=${createResponse.creatorKey}&password=${createResponse.password}`
+      );
+    } catch (error) {
+      console.error(error);
+      setCreateError(
+        error instanceof Error ? error.message : 'failed to create whisper'
+      );
+      setCreating(false);
+    }
   };
 
   return (
@@ -53,12 +82,37 @@ const Home: NextPage = () => {
         />
       </div>
       <div>
-        attach secret file{' '}
-        <input
-          type="file"
-          onChange={(event) => setSelectedFile(event.target.files![0])}
-        />
+        <label>
+          attach secret files{' '}
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            onChange={(event) => addFiles(event.target.files)}
+          />
+        </label>
       </div>
+      {selectedFiles.length > 0 ? (
+        <ul className={styles.fileList}>
+          {selectedFiles.map((file, index) => (
+            <li
+              className={styles.fileListItem}
+              key={`${file.name}-${file.size}-${file.lastModified}-${index}`}
+            >
+              <span className={styles.fileName}>{file.name}</span>
+              <button
+                type="button"
+                className={styles.removeFile}
+                aria-label={`Remove ${file.name}`}
+                onClick={() => removeFile(index)}
+              >
+                remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {createError ? <div>{createError}</div> : null}
       <div>
         <span>expires&nbsp;</span>
         <select
@@ -92,8 +146,8 @@ const Home: NextPage = () => {
           />
         </label>
       </div>
-      <button className={styles.button} onClick={create}>
-        Create Whisper
+      <button className={styles.button} onClick={create} disabled={creating}>
+        {creating ? 'Creating Whisper...' : 'Create Whisper'}
       </button>
     </Whisper>
   );
