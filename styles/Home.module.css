@@ -198,10 +198,50 @@
   width: 13rem;
 }
 
+.attachFiles {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  width: min(95%, 36rem);
+}
+
+.attachRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4rem 0.6rem;
+}
+
+.chooseFiles {
+  font: inherit;
+  cursor: pointer;
+  padding: 0.15rem 0.55rem;
+  border: 1px solid var(--border-color-dark);
+  border-radius: 6px;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.hiddenFileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .fileList {
   list-style: none;
-  margin: 0.25rem 0 0.5rem;
+  margin: 0;
   padding: 0;
+  width: 100%;
 }
 
 .fileListItem {
@@ -217,6 +257,7 @@
   overflow-wrap: anywhere;
   max-width: 20rem;
   text-align: left;
+  font-weight: 700;
 }
 
 .removeFile {

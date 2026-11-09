@@ -81,37 +81,47 @@ const Home: NextPage = () => {
           onChange={(e) => setSender(e.target.value)}
         />
       </div>
-      <div>
-        <label>
-          attach secret files{' '}
+      <div className={styles.attachFiles}>
+        <div className={styles.attachRow}>
+          <span id="attach-files-label">attach secret files</span>
+          <button
+            type="button"
+            className={styles.chooseFiles}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {selectedFiles.length === 0 ? 'Choose files' : 'Add files'}
+          </button>
           <input
             ref={fileInputRef}
+            className={styles.hiddenFileInput}
             type="file"
             multiple
+            tabIndex={-1}
+            aria-labelledby="attach-files-label"
             onChange={(event) => addFiles(event.target.files)}
           />
-        </label>
-      </div>
-      {selectedFiles.length > 0 ? (
-        <ul className={styles.fileList}>
-          {selectedFiles.map((file, index) => (
-            <li
-              className={styles.fileListItem}
-              key={`${file.name}-${file.size}-${file.lastModified}-${index}`}
-            >
-              <span className={styles.fileName}>{file.name}</span>
-              <button
-                type="button"
-                className={styles.removeFile}
-                aria-label={`Remove ${file.name}`}
-                onClick={() => removeFile(index)}
+        </div>
+        {selectedFiles.length > 0 ? (
+          <ul className={styles.fileList} aria-label="Selected files">
+            {selectedFiles.map((file, index) => (
+              <li
+                className={styles.fileListItem}
+                key={`${file.name}-${file.size}-${file.lastModified}-${index}`}
               >
-                remove
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : null}
+                <span className={styles.fileName}>{file.name}</span>
+                <button
+                  type="button"
+                  className={styles.removeFile}
+                  aria-label={`Remove ${file.name}`}
+                  onClick={() => removeFile(index)}
+                >
+                  remove
+                </button>
+              </li>
+            ))}
+          </ul>
+        ) : null}
+      </div>
       {createError ? <div>{createError}</div> : null}
       <div>
         <span>expires&nbsp;</span>
