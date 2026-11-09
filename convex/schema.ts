@@ -8,7 +8,7 @@ export default defineSchema({
     encryptedSecret: v.string(),
     // Encrypted with password.
     encryptedSender: v.optional(v.string()),
-    // Each stored file is encrypted with password.
+    // Zero or more files, each encrypted with the whisper password.
     storageIds: v.optional(v.array(v.string())),
     // So recipient can prove to server (in accessWhisper) that they are allowed
     // to read the secret.
