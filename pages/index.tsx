@@ -23,6 +23,28 @@ function toDateTimeLocal(ms: number): string {
   )}:${pad(d.getMinutes())}`;
 }
 
+// Reads a datetime-local value as local time. Browsers report '' while the
+// value is incomplete (iOS until every field is picked), which yields NaN so
+// validation asks for a date instead of guessing one.
+function parseDateTimeLocal(value: string): number {
+  const match =
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?$/.exec(
+      value
+    );
+  if (!match) {
+    return NaN;
+  }
+  const [, year, month, day, hour, minute, second] = match;
+  return new Date(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+    Number(hour),
+    Number(minute),
+    Number(second ?? 0)
+  ).getTime();
+}
+
 const Home: NextPage = () => {
   const createWhisperMutation = useMutation(api.createWhisper.default);
   const [secret, setSecret] = useState('');
@@ -45,8 +67,7 @@ const Home: NextPage = () => {
   const expirationLimits = (): ExpirationLimits => {
     const limits: ExpirationLimits = {};
     if (usesExpiresAt) {
-      // datetime-local values have no offset, so they parse as local time.
-      limits.expiresAt = new Date(expiresAtInput).getTime();
+      limits.expiresAt = parseDateTimeLocal(expiresAtInput);
     }
     if (usesMaxAccesses) {
       limits.maxAccesses = Number(maxAccessesInput);
@@ -164,7 +185,7 @@ const Home: NextPage = () => {
         ) : null}
       </div>
       {createError ? <div>{createError}</div> : null}
-      <div>
+      <div className={styles.expiresRow}>
         <label>
           <span>expires&nbsp;</span>
           <select
@@ -195,10 +216,12 @@ const Home: NextPage = () => {
           ) : null}
           {usesExpiresAt && usesMaxAccesses ? <span>or</span> : null}
           {usesMaxAccesses ? (
-            <label>
+            <label className={styles.accessCountLabel}>
               after{' '}
               <input
                 type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 className={styles.accessCountInput}
                 min={1}
                 max={maxCustomAccesses}
