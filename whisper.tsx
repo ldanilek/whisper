@@ -8,6 +8,11 @@ const Whisper = ({ children }: any) => {
     <div className={styles.container}>
       <Head>
         <title>Whisper</title>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1"
+          key="viewport"
+        />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 

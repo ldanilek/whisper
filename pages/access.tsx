@@ -11,7 +11,7 @@ const PasswordInput = ({ name }: { name: string }) => {
 
   return (
     <>
-      <div>
+      <div className={styles.formRow}>
         Password{' '}
         <input
           type="text"

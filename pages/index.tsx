@@ -71,7 +71,7 @@ const Home: NextPage = () => {
         value={secret}
         onChange={(e) => setSecret(e.target.value)}
       />
-      <div>
+      <div className={styles.formRow}>
         sender{' '}
         <input
           type="text"
@@ -123,7 +123,7 @@ const Home: NextPage = () => {
         ) : null}
       </div>
       {createError ? <div>{createError}</div> : null}
-      <div>
+      <div className={styles.formRow}>
         <span>expires&nbsp;</span>
         <select
           value={expiration}
@@ -136,7 +136,7 @@ const Home: NextPage = () => {
           ))}
         </select>
       </div>
-      <div>
+      <div className={styles.formRow}>
         password{' '}
         <input
           placeholder="leave blank to generate random"
@@ -146,7 +146,7 @@ const Home: NextPage = () => {
           onChange={(e) => setPassword(e.target.value)}
         />
       </div>
-      <div>
+      <div className={styles.formRow}>
         <label>
           request geolocation{' '}
           <input
