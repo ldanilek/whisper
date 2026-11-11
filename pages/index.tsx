@@ -3,16 +3,56 @@ import styles from '../styles/Home.module.css';
 import { useMutation } from 'convex/react';
 import { useRef, useState } from 'react';
 import { createWhisper } from '../common';
-import { expirationOptions } from '../expiration';
+import {
+  ExpirationLimits,
+  expirationOptions,
+  maxCustomAccesses,
+  optionUsesExpiresAt,
+  optionUsesMaxAccesses,
+} from '../expiration';
 import { useRouter } from 'next/router';
 import Whisper from '../whisper';
 import { api } from '../convex/_generated/api';
+
+// Formats a timestamp as the local-time value a datetime-local input expects.
+function toDateTimeLocal(ms: number): string {
+  const d = new Date(ms);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
+    d.getHours()
+  )}:${pad(d.getMinutes())}`;
+}
 
 const Home: NextPage = () => {
   const createWhisperMutation = useMutation(api.createWhisper.default);
   const [secret, setSecret] = useState('');
   const [sender, setSender] = useState('');
   const [expiration, setExpiration] = useState(expirationOptions[0]);
+  // The page is prerendered, so the default date is filled in when the sender
+  // picks a date option rather than at build time.
+  const [expiresAtInput, setExpiresAtInput] = useState('');
+  const [maxAccessesInput, setMaxAccessesInput] = useState('3');
+  const usesExpiresAt = optionUsesExpiresAt(expiration);
+  const usesMaxAccesses = optionUsesMaxAccesses(expiration);
+  const chooseExpiration = (option: string) => {
+    setExpiration(option);
+    if (optionUsesExpiresAt(option) && expiresAtInput === '') {
+      setExpiresAtInput(
+        toDateTimeLocal(new Date().getTime() + 24 * 60 * 60 * 1000)
+      );
+    }
+  };
+  const expirationLimits = (): ExpirationLimits => {
+    const limits: ExpirationLimits = {};
+    if (usesExpiresAt) {
+      // datetime-local values have no offset, so they parse as local time.
+      limits.expiresAt = new Date(expiresAtInput).getTime();
+    }
+    if (usesMaxAccesses) {
+      limits.maxAccesses = Number(maxAccessesInput);
+    }
+    return limits;
+  };
   const [password, setPassword] = useState('');
   const [requestGeolocation, setRequestGeolocation] = useState(false);
   const router = useRouter();
@@ -49,7 +89,8 @@ const Home: NextPage = () => {
         password,
         createWhisperMutation,
         makeUploadURL,
-        requestGeolocation
+        requestGeolocation,
+        expirationLimits()
       );
       await router.push(
         `/created?name=${createResponse.name}&creatorKey=${createResponse.creatorKey}&password=${createResponse.password}`
@@ -124,18 +165,56 @@ const Home: NextPage = () => {
       </div>
       {createError ? <div>{createError}</div> : null}
       <div>
-        <span>expires&nbsp;</span>
-        <select
-          value={expiration}
-          onChange={(e) => setExpiration(e.target.value)}
-        >
-          {expirationOptions.map((o) => (
-            <option value={o} key={o}>
-              {o}
-            </option>
-          ))}
-        </select>
+        <label>
+          <span>expires&nbsp;</span>
+          <select
+            value={expiration}
+            onChange={(e) => chooseExpiration(e.target.value)}
+          >
+            {expirationOptions.map((o) => (
+              <option value={o} key={o}>
+                {o}
+              </option>
+            ))}
+          </select>
+        </label>
       </div>
+      {usesExpiresAt || usesMaxAccesses ? (
+        <div className={styles.expirationLimits}>
+          {usesExpiresAt ? (
+            <label>
+              at{' '}
+              <input
+                type="datetime-local"
+                value={expiresAtInput}
+                min={toDateTimeLocal(new Date().getTime())}
+                required
+                onChange={(e) => setExpiresAtInput(e.target.value)}
+              />
+            </label>
+          ) : null}
+          {usesExpiresAt && usesMaxAccesses ? <span>or</span> : null}
+          {usesMaxAccesses ? (
+            <label>
+              after{' '}
+              <input
+                type="number"
+                className={styles.accessCountInput}
+                min={1}
+                max={maxCustomAccesses}
+                step={1}
+                value={maxAccessesInput}
+                required
+                onChange={(e) => setMaxAccessesInput(e.target.value)}
+              />{' '}
+              {maxAccessesInput === '1' ? 'access' : 'accesses'}
+            </label>
+          ) : null}
+          {usesExpiresAt && usesMaxAccesses ? (
+            <span className={styles.expirationHint}>whichever is first</span>
+          ) : null}
+        </div>
+      ) : null}
       <div>
         password{' '}
         <input

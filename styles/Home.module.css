@@ -198,6 +198,24 @@
   width: 13rem;
 }
 
+.expirationLimits {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4rem 0.6rem;
+  width: min(95%, 36rem);
+}
+
+.accessCountInput {
+  width: 5rem;
+}
+
+.expirationHint {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
 .attachFiles {
   position: relative;
   display: flex;
