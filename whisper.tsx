@@ -1,6 +1,5 @@
 import styles from './styles/Home.module.css';
 import Head from 'next/head';
-import Image from 'next/image';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const Whisper = ({ children }: any) => {
@@ -37,12 +36,18 @@ const Whisper = ({ children }: any) => {
           >
             Powered by{' '}
             <span className={styles.logo}>
-              <Image
-                src="/convex.svg"
-                alt="Convex Logo"
-                width={90}
-                height={18}
-              />
+              <picture>
+                <source
+                  media="(prefers-color-scheme: dark)"
+                  srcSet="/convex-dark.svg"
+                />
+                <img
+                  src="/convex.svg"
+                  alt="Convex Logo"
+                  width={90}
+                  height={18}
+                />
+              </picture>
             </span>
           </a>
           <a href="https://github.com/ldanilek/whisper/blob/main/README.md">
