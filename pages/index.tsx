@@ -133,7 +133,7 @@ const Home: NextPage = () => {
         value={secret}
         onChange={(e) => setSecret(e.target.value)}
       />
-      <div>
+      <div className={styles.formRow}>
         sender{' '}
         <input
           type="text"
@@ -185,23 +185,22 @@ const Home: NextPage = () => {
         ) : null}
       </div>
       {createError ? <div>{createError}</div> : null}
-      <div className={styles.expiresRow}>
-        <label>
-          <span>expires&nbsp;</span>
-          <select
-            value={expiration}
-            onChange={(e) => chooseExpiration(e.target.value)}
-          >
-            {expirationOptions.map((o) => (
-              <option value={o} key={o}>
-                {o}
-              </option>
-            ))}
-          </select>
-        </label>
+      <div className={styles.formRow}>
+        <label htmlFor="expiration">expires&nbsp;</label>
+        <select
+          id="expiration"
+          value={expiration}
+          onChange={(e) => chooseExpiration(e.target.value)}
+        >
+          {expirationOptions.map((o) => (
+            <option value={o} key={o}>
+              {o}
+            </option>
+          ))}
+        </select>
       </div>
       {usesExpiresAt || usesMaxAccesses ? (
-        <div className={styles.expirationLimits}>
+        <div className={`${styles.formRow} ${styles.expirationLimits}`}>
           {usesExpiresAt ? (
             <label>
               at{' '}
@@ -238,7 +237,7 @@ const Home: NextPage = () => {
           ) : null}
         </div>
       ) : null}
-      <div>
+      <div className={styles.formRow}>
         password{' '}
         <input
           placeholder="leave blank to generate random"
@@ -248,7 +247,7 @@ const Home: NextPage = () => {
           onChange={(e) => setPassword(e.target.value)}
         />
       </div>
-      <div>
+      <div className={styles.formRow}>
         <label>
           request geolocation{' '}
           <input
