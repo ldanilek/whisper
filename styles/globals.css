@@ -71,3 +71,24 @@ select:focus {
 input[type='file'] {
   color: var(--text-primary);
 }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* iOS Safari zooms into any focused control whose font is below 16px. */
+@media (max-width: 600px), (pointer: coarse) {
+  input[type='text'],
+  input[type='password'],
+  textarea,
+  select {
+    font-size: 16px;
+  }
+
+  input[type='text'],
+  input[type='password'],
+  select {
+    min-height: 44px;
+  }
+}

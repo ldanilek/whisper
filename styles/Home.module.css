@@ -48,6 +48,7 @@
   background-color: var(--bg-primary);
   color: var(--text-primary);
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
   transition: background-color 0.3s ease, color 0.3s ease,
     border-color 0.3s ease;
 }
@@ -70,6 +71,7 @@
   display: block;
   box-sizing: inherit;
   padding: 1em 16px;
+  overflow-wrap: anywhere;
   background-color: var(--bg-primary);
   color: var(--link-color);
   transition: background-color 0.3s ease, color 0.3s ease,
@@ -122,6 +124,7 @@
   font-size: 0.8rem;
   padding: 2px;
   text-align: center;
+  overflow-wrap: anywhere;
   color: var(--text-primary);
   transition: color 0.3s ease, border-color 0.3s ease;
 }
@@ -196,6 +199,10 @@
 
 .passwordInput {
   width: 13rem;
+}
+
+.formRow {
+  max-width: 100%;
 }
 
 .attachFiles {
@@ -309,5 +316,89 @@
   }
   100% {
     transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 600px), (pointer: coarse) {
+  .button,
+  .chooseFiles,
+  .removeFile {
+    min-height: 44px;
+  }
+
+  .removeFile {
+    padding: 0 0.5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .title {
+    width: auto;
+    margin: 0.75rem 2.5% 0.25rem;
+  }
+
+  .subtitle {
+    position: static;
+    text-align: left;
+    margin: 0 2.5% 0.6rem;
+  }
+
+  .formRow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 95%;
+    margin: 0.25rem 0;
+  }
+
+  .formRow input[type='text'],
+  .formRow input[type='password'],
+  .formRow select {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
+  }
+
+  .formRow label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+  }
+
+  .formRow input[type='checkbox'] {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0;
+  }
+
+  .attachFiles {
+    align-items: stretch;
+  }
+
+  .attachRow {
+    justify-content: space-between;
+  }
+
+  .fileListItem {
+    justify-content: space-between;
+  }
+
+  .description {
+    margin: 1.5rem 0.5rem;
+  }
+
+  .sharePair {
+    flex-direction: column;
+  }
+
+  .accessLogTable {
+    margin: 1rem 0;
+    font-size: 1rem;
   }
 }
