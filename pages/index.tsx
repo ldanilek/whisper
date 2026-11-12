@@ -3,16 +3,77 @@ import styles from '../styles/Home.module.css';
 import { useMutation } from 'convex/react';
 import { useRef, useState } from 'react';
 import { createWhisper } from '../common';
-import { expirationOptions } from '../expiration';
+import {
+  ExpirationLimits,
+  expirationOptions,
+  maxCustomAccesses,
+  optionUsesExpiresAt,
+  optionUsesMaxAccesses,
+} from '../expiration';
 import { useRouter } from 'next/router';
 import Whisper from '../whisper';
 import { api } from '../convex/_generated/api';
+
+// Formats a timestamp as the local-time value a datetime-local input expects.
+function toDateTimeLocal(ms: number): string {
+  const d = new Date(ms);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(
+    d.getHours()
+  )}:${pad(d.getMinutes())}`;
+}
+
+// Reads a datetime-local value as local time. Browsers report '' while the
+// value is incomplete (iOS until every field is picked), which yields NaN so
+// validation asks for a date instead of guessing one.
+function parseDateTimeLocal(value: string): number {
+  const match =
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d+)?)?$/.exec(
+      value
+    );
+  if (!match) {
+    return NaN;
+  }
+  const [, year, month, day, hour, minute, second] = match;
+  return new Date(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+    Number(hour),
+    Number(minute),
+    Number(second ?? 0)
+  ).getTime();
+}
 
 const Home: NextPage = () => {
   const createWhisperMutation = useMutation(api.createWhisper.default);
   const [secret, setSecret] = useState('');
   const [sender, setSender] = useState('');
   const [expiration, setExpiration] = useState(expirationOptions[0]);
+  // The page is prerendered, so the default date is filled in when the sender
+  // picks a date option rather than at build time.
+  const [expiresAtInput, setExpiresAtInput] = useState('');
+  const [maxAccessesInput, setMaxAccessesInput] = useState('3');
+  const usesExpiresAt = optionUsesExpiresAt(expiration);
+  const usesMaxAccesses = optionUsesMaxAccesses(expiration);
+  const chooseExpiration = (option: string) => {
+    setExpiration(option);
+    if (optionUsesExpiresAt(option) && expiresAtInput === '') {
+      setExpiresAtInput(
+        toDateTimeLocal(new Date().getTime() + 24 * 60 * 60 * 1000)
+      );
+    }
+  };
+  const expirationLimits = (): ExpirationLimits => {
+    const limits: ExpirationLimits = {};
+    if (usesExpiresAt) {
+      limits.expiresAt = parseDateTimeLocal(expiresAtInput);
+    }
+    if (usesMaxAccesses) {
+      limits.maxAccesses = Number(maxAccessesInput);
+    }
+    return limits;
+  };
   const [password, setPassword] = useState('');
   const [requestGeolocation, setRequestGeolocation] = useState(false);
   const router = useRouter();
@@ -49,7 +110,8 @@ const Home: NextPage = () => {
         password,
         createWhisperMutation,
         makeUploadURL,
-        requestGeolocation
+        requestGeolocation,
+        expirationLimits()
       );
       await router.push(
         `/created?name=${createResponse.name}&creatorKey=${createResponse.creatorKey}&password=${createResponse.password}`
@@ -124,10 +186,11 @@ const Home: NextPage = () => {
       </div>
       {createError ? <div>{createError}</div> : null}
       <div className={styles.formRow}>
-        <span>expires&nbsp;</span>
+        <label htmlFor="expiration">expires&nbsp;</label>
         <select
+          id="expiration"
           value={expiration}
-          onChange={(e) => setExpiration(e.target.value)}
+          onChange={(e) => chooseExpiration(e.target.value)}
         >
           {expirationOptions.map((o) => (
             <option value={o} key={o}>
@@ -136,6 +199,44 @@ const Home: NextPage = () => {
           ))}
         </select>
       </div>
+      {usesExpiresAt || usesMaxAccesses ? (
+        <div className={`${styles.formRow} ${styles.expirationLimits}`}>
+          {usesExpiresAt ? (
+            <label>
+              at{' '}
+              <input
+                type="datetime-local"
+                value={expiresAtInput}
+                min={toDateTimeLocal(new Date().getTime())}
+                required
+                onChange={(e) => setExpiresAtInput(e.target.value)}
+              />
+            </label>
+          ) : null}
+          {usesExpiresAt && usesMaxAccesses ? <span>or</span> : null}
+          {usesMaxAccesses ? (
+            <label className={styles.accessCountLabel}>
+              after{' '}
+              <input
+                type="number"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                className={styles.accessCountInput}
+                min={1}
+                max={maxCustomAccesses}
+                step={1}
+                value={maxAccessesInput}
+                required
+                onChange={(e) => setMaxAccessesInput(e.target.value)}
+              />{' '}
+              {maxAccessesInput === '1' ? 'access' : 'accesses'}
+            </label>
+          ) : null}
+          {usesExpiresAt && usesMaxAccesses ? (
+            <span className={styles.expirationHint}>whichever is first</span>
+          ) : null}
+        </div>
+      ) : null}
       <div className={styles.formRow}>
         password{' '}
         <input

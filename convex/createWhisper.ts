@@ -1,5 +1,5 @@
 import { mutation } from './_generated/server';
-import { scheduleDeletion } from '../expiration';
+import { scheduleDeletion, validateExpirationInput } from '../expiration';
 import { ConvexError, v } from 'convex/values';
 
 export default mutation({
@@ -11,6 +11,8 @@ export default mutation({
     passwordHash: v.string(),
     creatorKey: v.string(),
     expiration: v.string(),
+    expiresAt: v.optional(v.number()),
+    maxAccesses: v.optional(v.number()),
     requestGeolocation: v.boolean(),
   },
   handler: async (
@@ -23,9 +25,16 @@ export default mutation({
       passwordHash,
       creatorKey,
       expiration,
+      expiresAt,
+      maxAccesses,
       requestGeolocation,
     }
   ) => {
+    validateExpirationInput(
+      expiration,
+      { expiresAt, maxAccesses },
+      new Date().getTime()
+    );
     const whisperDoc = await db
       .query('whispers')
       .withIndex('by_name', (q) => q.eq('name', whisperName))
@@ -41,6 +50,8 @@ export default mutation({
       passwordHash,
       creatorKey,
       expiration,
+      expiresAt,
+      maxAccesses,
       requestGeolocation,
     });
     await scheduleDeletion(scheduler, db, whisperName, creatorKey);

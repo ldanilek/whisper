@@ -2,6 +2,7 @@ import { ReactMutation } from 'convex/react';
 import { api } from './convex/_generated/api';
 import { v4 as uuidv4 } from 'uuid';
 import CryptoJS from 'crypto-js';
+import { ExpirationLimits, validateExpirationInput } from './expiration';
 
 export type CreateResponse = {
   name: string;
@@ -131,8 +132,11 @@ export async function createWhisper(
   password: string,
   createWhisperMutation: ReactMutation<typeof api.createWhisper.default>,
   makeUploadURL: ReactMutation<typeof api.fileUploadURL.default>,
-  requestGeolocation: boolean
+  requestGeolocation: boolean,
+  expirationLimits: ExpirationLimits = {}
 ): Promise<CreateResponse> {
+  // Fail before uploading files the whisper would never reference.
+  validateExpirationInput(expiration, expirationLimits, new Date().getTime());
   const name = uuidv4();
   const creatorKey = uuidv4();
   if (password.length === 0) {
@@ -181,6 +185,7 @@ export async function createWhisper(
     passwordHash,
     creatorKey,
     expiration,
+    ...expirationLimits,
     requestGeolocation,
   });
   return {

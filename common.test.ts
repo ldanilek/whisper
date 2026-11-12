@@ -9,6 +9,7 @@ import {
   listAttachments,
   takeAttachment,
 } from './common';
+import { atTimeOption, atTimeOrAfterAccessesOption } from './expiration';
 
 const originalFetch = globalThis.fetch;
 
@@ -24,6 +25,8 @@ type CreatedWhisper = {
   passwordHash: string;
   creatorKey: string;
   expiration: string;
+  expiresAt?: number;
+  maxAccesses?: number;
   requestGeolocation: boolean;
 };
 
@@ -205,6 +208,53 @@ test('createWhisper does not save a whisper when an upload fails', async () => {
       false
     )
   ).rejects.toThrow('failed to upload b.txt');
+  expect(saved).toBe(false);
+});
+
+test('createWhisper sends custom expiration limits', async () => {
+  const uploads = mockUploads(new Map());
+  const created: CreatedWhisper[] = [];
+  const expiresAt = new Date().getTime() + 60 * 60 * 1000;
+
+  await createWhisper(
+    'secret',
+    '',
+    [],
+    atTimeOrAfterAccessesOption,
+    'pw',
+    (async (args: CreatedWhisper) => {
+      created.push(args);
+    }) as unknown as ReactMutation<typeof api.createWhisper.default>,
+    uploads.makeUploadURL,
+    false,
+    { expiresAt, maxAccesses: 7 }
+  );
+
+  expect(created[0].expiration).toBe(atTimeOrAfterAccessesOption);
+  expect(created[0].expiresAt).toBe(expiresAt);
+  expect(created[0].maxAccesses).toBe(7);
+});
+
+test('createWhisper rejects a past expiration before uploading files', async () => {
+  const uploads = mockUploads(new Map());
+  let saved = false;
+
+  await expect(
+    createWhisper(
+      'secret',
+      'ada',
+      [new File(['one'], 'a.txt')],
+      atTimeOption,
+      'pw',
+      (async () => {
+        saved = true;
+      }) as unknown as ReactMutation<typeof api.createWhisper.default>,
+      uploads.makeUploadURL,
+      false,
+      { expiresAt: new Date().getTime() - 1000 }
+    )
+  ).rejects.toThrow('expiration date and time must be in the future');
+  expect(uploads.uploadCount()).toBe(0);
   expect(saved).toBe(false);
 });
 

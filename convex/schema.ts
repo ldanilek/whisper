@@ -19,6 +19,10 @@ export default defineSchema({
     requestGeolocation: v.optional(v.boolean()),
 
     expiration: v.string(),
+    // Set only for the custom expiration options that need them.
+    // Unix timestamp in milliseconds.
+    expiresAt: v.optional(v.number()),
+    maxAccesses: v.optional(v.number()),
   }).index('by_name', ['name']),
   accesses: defineTable({
     name: v.string(),

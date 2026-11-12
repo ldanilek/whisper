@@ -49,6 +49,8 @@ a {
 
 input[type='text'],
 input[type='password'],
+input[type='number'],
+input[type='datetime-local'],
 textarea,
 select {
   background-color: var(--bg-primary);
@@ -62,6 +64,8 @@ select {
 
 input[type='text']:focus,
 input[type='password']:focus,
+input[type='number']:focus,
+input[type='datetime-local']:focus,
 textarea:focus,
 select:focus {
   outline: none;
@@ -81,6 +85,8 @@ html {
 @media (max-width: 600px), (pointer: coarse) {
   input[type='text'],
   input[type='password'],
+  input[type='number'],
+  input[type='datetime-local'],
   textarea,
   select {
     font-size: 16px;
@@ -88,6 +94,8 @@ html {
 
   input[type='text'],
   input[type='password'],
+  input[type='number'],
+  input[type='datetime-local'],
   select {
     min-height: 44px;
   }

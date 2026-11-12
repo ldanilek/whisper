@@ -205,6 +205,24 @@
   max-width: 100%;
 }
 
+.expirationLimits {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4rem 0.6rem;
+  width: min(95%, 36rem);
+}
+
+.accessCountInput {
+  width: 5rem;
+}
+
+.expirationHint {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
 .attachFiles {
   position: relative;
   display: flex;
@@ -358,6 +376,7 @@
 
   .formRow input[type='text'],
   .formRow input[type='password'],
+  .formRow input[type='datetime-local'],
   .formRow select {
     flex: 1 1 auto;
     min-width: 0;
@@ -400,5 +419,19 @@
   .accessLogTable {
     margin: 1rem 0;
     font-size: 1rem;
+  }
+
+  /* The expiration row is also a .formRow; stack its date and count parts. */
+  .expirationLimits {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .accessCountLabel {
+    justify-content: center;
+  }
+
+  .expirationLimits > span {
+    text-align: center;
   }
 }
