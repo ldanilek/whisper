@@ -133,17 +133,17 @@ const Home: NextPage = () => {
         value={secret}
         onChange={(e) => setSecret(e.target.value)}
       />
-      <div className={styles.formRow}>
-        sender{' '}
-        <input
-          type="text"
-          className={styles.passwordInput}
-          placeholder="your name (optional)"
-          value={sender}
-          onChange={(e) => setSender(e.target.value)}
-        />
-      </div>
-      <div className={styles.attachFiles}>
+      <div className={styles.extrasRow}>
+        <div className={styles.formRow}>
+          sender{' '}
+          <input
+            type="text"
+            className={styles.passwordInput}
+            placeholder="your name (optional)"
+            value={sender}
+            onChange={(e) => setSender(e.target.value)}
+          />
+        </div>
         <div className={styles.attachRow}>
           <span id="attach-files-label">attach secret files</span>
           <button
@@ -163,27 +163,27 @@ const Home: NextPage = () => {
             onChange={(event) => addFiles(event.target.files)}
           />
         </div>
-        {selectedFiles.length > 0 ? (
-          <ul className={styles.fileList} aria-label="Selected files">
-            {selectedFiles.map((file, index) => (
-              <li
-                className={styles.fileListItem}
-                key={`${file.name}-${file.size}-${file.lastModified}-${index}`}
-              >
-                <span className={styles.fileName}>{file.name}</span>
-                <button
-                  type="button"
-                  className={styles.removeFile}
-                  aria-label={`Remove ${file.name}`}
-                  onClick={() => removeFile(index)}
-                >
-                  remove
-                </button>
-              </li>
-            ))}
-          </ul>
-        ) : null}
       </div>
+      {selectedFiles.length > 0 ? (
+        <ul className={styles.fileList} aria-label="Selected files">
+          {selectedFiles.map((file, index) => (
+            <li
+              className={styles.fileListItem}
+              key={`${file.name}-${file.size}-${file.lastModified}-${index}`}
+            >
+              <span className={styles.fileName}>{file.name}</span>
+              <button
+                type="button"
+                className={styles.removeFile}
+                aria-label={`Remove ${file.name}`}
+                onClick={() => removeFile(index)}
+              >
+                remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : null}
       {createError ? <div>{createError}</div> : null}
       <div className={styles.formRow}>
         <label htmlFor="expiration">expires&nbsp;</label>
@@ -202,7 +202,7 @@ const Home: NextPage = () => {
       {usesExpiresAt || usesMaxAccesses ? (
         <div className={`${styles.formRow} ${styles.expirationLimits}`}>
           {usesExpiresAt ? (
-            <label>
+            <label className={styles.expiresAtLabel}>
               at{' '}
               <input
                 type="datetime-local"
@@ -237,26 +237,31 @@ const Home: NextPage = () => {
           ) : null}
         </div>
       ) : null}
-      <div className={styles.formRow}>
-        password{' '}
-        <input
-          placeholder="leave blank to generate random"
-          type="text"
-          className={styles.passwordInput}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-      </div>
-      <div className={styles.formRow}>
-        <label>
-          request geolocation{' '}
-          <input
-            type="checkbox"
-            checked={requestGeolocation}
-            onChange={(e) => setRequestGeolocation(e.target.checked)}
-          />
-        </label>
-      </div>
+      <details className={styles.moreOptions}>
+        <summary>more options</summary>
+        <div className={styles.extrasRow}>
+          <div className={styles.formRow}>
+            password{' '}
+            <input
+              placeholder="leave blank to generate random"
+              type="text"
+              className={styles.passwordInput}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          <div className={styles.formRow}>
+            <label>
+              request geolocation{' '}
+              <input
+                type="checkbox"
+                checked={requestGeolocation}
+                onChange={(e) => setRequestGeolocation(e.target.checked)}
+              />
+            </label>
+          </div>
+        </div>
+      </details>
       <button className={styles.button} onClick={create} disabled={creating}>
         {creating ? 'Creating Whisper...' : 'Create Whisper'}
       </button>
