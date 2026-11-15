@@ -1,7 +1,4 @@
 .container {
-  --column-width: 40rem;
-  --gutter: 1rem;
-  --column-padding: max(var(--gutter), calc((100% - var(--column-width)) / 2));
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -13,57 +10,26 @@
 .secretAttachment {
   color: var(--link-color);
   text-decoration: underline;
-  overflow-wrap: anywhere;
 }
 
 .main {
-  padding: 1.25rem var(--column-padding) 1.5rem;
+  padding: 0.3rem 0;
   flex: 10;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-}
-
-/* Create form: labels in the first column, controls aligned in the second. */
-.form {
-  display: grid;
-  grid-template-columns: max-content minmax(0, 1fr);
-  gap: 0.5rem 0.75rem;
-  align-items: start;
-}
-
-.form > input,
-.form > select {
-  width: 100%;
-  min-width: 0;
-}
-
-/* Matches the control height so labels line up with the control's text. */
-.fieldLabel {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  line-height: 2.25rem;
-}
-
-.passwordRow .fieldLabel {
-  line-height: normal;
-}
-
-.formSpan {
-  grid-column: 2;
+  justify-content: top;
+  align-items: center;
 }
 
 .secretDisplay {
-  grid-column: 1 / -1;
-  width: 100%;
+  width: 95%;
   min-height: 8rem;
-  margin: 0 0 0.25rem;
-  resize: vertical;
+  margin-top: 0rem;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   border: 1px solid var(--border-color-dark);
-  border-radius: 6px;
-  padding: 0.5rem 0.6rem;
+  border-radius: 4px;
+  padding: 0.5rem;
   transition: background-color 0.3s ease, color 0.3s ease,
     border-color 0.3s ease;
 }
@@ -73,30 +39,215 @@
   border-color: var(--link-color);
 }
 
-.fileControl {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.4rem;
-  min-width: 0;
+.secretOutput {
+  border: 1px solid var(--border-color-dark);
+  margin: 0.5rem;
+  padding: 1rem;
+  font-family: monospace;
+  border-radius: 10px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  transition: background-color 0.3s ease, color 0.3s ease,
+    border-color 0.3s ease;
 }
 
-.chooseFiles {
-  font: inherit;
-  font-size: 0.9rem;
-  cursor: pointer;
-  min-height: 2.25rem;
-  padding: 0.3rem 0.75rem;
+.copiable {
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+  text-align: center;
+  line-height: 1.5;
+  font-size: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.shareURL {
+  font-size: 0.8rem;
   border: 1px solid var(--border-color-dark);
-  border-radius: 6px;
+  border-radius: 16px;
+  display: block;
+  box-sizing: inherit;
+  padding: 1em 16px;
+  overflow-wrap: anywhere;
+  background-color: var(--bg-primary);
+  color: var(--link-color);
+  transition: background-color 0.3s ease, color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.button {
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  margin: 0.5rem;
+  padding: 0.5rem;
+  text-decoration: none;
+  border: 1px solid var(--border-color-dark);
+  border-radius: 10px;
+  transition: color 0.15s ease, border-color 0.15s ease,
+    background-color 0.3s ease;
+  text-align: center;
   background-color: var(--bg-tertiary);
   color: var(--text-primary);
 }
 
-.chooseFiles:hover,
-.chooseFiles:focus-visible {
+.button:hover,
+.button:focus,
+.button:active {
+  color: var(--link-hover);
   border-color: var(--link-hover);
+}
+
+.accessLog {
+  display: flex;
+  flex-direction: column;
+}
+
+.accessLogTable {
+  border: 1px solid var(--border-color-dark);
+  border-radius: 10px;
+  margin: 2rem;
+  background-color: var(--bg-primary);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.accessLogTable td {
+  color: var(--text-primary);
+  transition: color 0.3s ease;
+}
+
+.accessLogEntry {
+  border-top: 1px solid var(--border-color-dark);
+  font-size: 0.8rem;
+  padding: 2px;
+  text-align: center;
+  overflow-wrap: anywhere;
+  color: var(--text-primary);
+  transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+.footer {
+  display: flex;
+  flex: 1;
+  padding: 2rem 0;
+  border-top: 1px solid var(--border-color);
+  justify-content: center;
+  align-items: center;
+  transition: border-color 0.3s ease;
+}
+
+.footer a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-grow: 1;
+}
+
+.footerLink {
+  text-decoration: underline;
+}
+
+.title a {
+  color: var(--link-color);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.title a:hover,
+.title a:focus,
+.title a:active {
+  text-decoration: underline;
+}
+
+.title {
+  margin: 1rem;
+  text-align: left;
+  line-height: 1.15;
+  font-size: 2rem;
+  width: 50%;
+}
+
+.header {
+  margin: 0;
+  position: sticky;
+  top: 0;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  flex: row;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.subtitle {
+  color: var(--text-tertiary);
+  text-align: right;
+  position: absolute;
+  bottom: 0;
+  right: 1em;
+  transition: color 0.3s ease;
+}
+
+.description {
+  text-align: center;
+  margin: 2rem 0;
+  line-height: 1.5;
+  font-size: 1.3rem;
+}
+
+.passwordInput {
+  width: 13rem;
+}
+
+.formRow {
+  max-width: 100%;
+}
+
+.expirationLimits {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4rem 0.6rem;
+  width: min(95%, 36rem);
+}
+
+.accessCountInput {
+  width: 5rem;
+}
+
+.expirationHint {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.attachFiles {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  width: min(95%, 36rem);
+}
+
+.attachRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.4rem 0.6rem;
+}
+
+.chooseFiles {
+  font: inherit;
+  cursor: pointer;
+  padding: 0.15rem 0.55rem;
+  border: 1px solid var(--border-color-dark);
+  border-radius: 6px;
+  background-color: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 .hiddenFileInput {
@@ -116,33 +267,26 @@
   margin: 0;
   padding: 0;
   width: 100%;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  background-color: var(--bg-primary);
 }
 
 .fileListItem {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: center;
   gap: 0.75rem;
-  padding: 0.3rem 0.6rem;
-  font-size: 0.9rem;
-}
-
-.fileListItem + .fileListItem {
-  border-top: 1px solid var(--border-color);
+  align-items: center;
+  font-size: 0.95rem;
+  margin: 0.15rem 0;
 }
 
 .fileName {
-  min-width: 0;
   overflow-wrap: anywhere;
-  font-weight: 600;
+  max-width: 20rem;
+  text-align: left;
+  font-weight: 700;
 }
 
 .removeFile {
   font: inherit;
-  flex-shrink: 0;
   cursor: pointer;
   background: none;
   border: none;
@@ -151,320 +295,15 @@
   padding: 0;
 }
 
-.expirationLimits {
-  grid-column: 2;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.4rem 0.6rem;
-  padding-left: 0.6rem;
-  border-left: 2px solid var(--border-color);
-  font-size: 0.9rem;
-}
-
-.expiresAtLabel,
-.accessCountLabel {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.accessCountInput {
-  width: 5rem;
-}
-
-.expirationHint {
-  color: var(--text-secondary);
-}
-
-.checkboxLabel {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  justify-self: start;
-  font-size: 0.9rem;
-  cursor: pointer;
-}
-
-.checkboxLabel input {
-  width: 1rem;
-  height: 1rem;
-  margin: 0;
-}
-
-.formError {
-  overflow-wrap: anywhere;
-}
-
-.formSubmit {
-  grid-column: 2;
-  justify-self: start;
-  margin-top: 0.25rem;
-}
-
-.button {
-  font-family: inherit;
-  font-size: 1rem;
-  font-weight: 800;
-  cursor: pointer;
-  margin: 0;
-  min-height: 2.25rem;
-  padding: 0.35rem 1rem;
-  text-decoration: none;
-  border: 1px solid var(--border-color-dark);
-  border-radius: 8px;
-  transition: color 0.15s ease, border-color 0.15s ease,
-    background-color 0.3s ease;
-  text-align: center;
-  background-color: var(--bg-tertiary);
-  color: var(--text-primary);
-}
-
-.button:hover,
-.button:focus,
-.button:active {
-  color: var(--link-hover);
-  border-color: var(--link-hover);
-}
-
 .button:disabled {
   cursor: default;
   opacity: 0.7;
 }
 
-.primaryAction {
-  align-self: flex-start;
-}
-
-.pageTitle {
-  margin: 0;
-  font-size: 1.15rem;
-  font-weight: 600;
-  line-height: 1.3;
-  overflow-wrap: anywhere;
-}
-
-.section {
+.sharePair {
   display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.sectionTitle {
-  margin: 0;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.section + .section {
-  padding-top: 1rem;
-  border-top: 1px solid var(--border-color);
-}
-
-.statusText {
-  margin: 0;
-  color: var(--text-secondary);
-}
-
-.statusRow {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.5rem 1rem;
-}
-
-.statusRow .statusText {
-  color: var(--text-primary);
-}
-
-/* A share value with its copy button attached on the right. */
-.copiable {
-  display: flex;
-  align-items: stretch;
-  border: 1px solid var(--border-color-dark);
-  border-radius: 6px;
-  background-color: var(--bg-primary);
-  overflow: hidden;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-
-.shareURL {
-  flex: 1;
-  min-width: 0;
-  padding: 0.5rem 0.6rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.8rem;
-  line-height: 1.4;
-  overflow-wrap: anywhere;
-  color: var(--link-color);
-  align-self: center;
-}
-
-.copyButton {
-  font: inherit;
-  font-size: 0.9rem;
-  font-weight: 700;
-  flex-shrink: 0;
-  min-width: 4.25rem;
-  padding: 0 0.85rem;
-  cursor: pointer;
-  border: none;
-  border-left: 1px solid var(--border-color-dark);
-  background-color: var(--bg-tertiary);
-  color: var(--text-primary);
-  transition: color 0.15s ease, background-color 0.3s ease;
-}
-
-.copyButton:hover,
-.copyButton:focus,
-.copyButton:active {
-  color: var(--link-hover);
-}
-
-.accessLogTable {
-  width: 100%;
-  margin-top: 0.25rem;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  border-spacing: 0;
-  background-color: var(--bg-primary);
-  font-size: 0.8rem;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-
-.accessLogTable td {
-  padding: 0.35rem 0.6rem;
-  text-align: left;
-  vertical-align: top;
-  color: var(--text-primary);
-  transition: color 0.3s ease;
-}
-
-.accessLogTable thead td {
-  color: var(--text-secondary);
-  font-weight: 600;
-}
-
-.accessLogEntry {
-  border-top: 1px solid var(--border-color);
-  overflow-wrap: anywhere;
-  transition: color 0.3s ease, border-color 0.3s ease;
-}
-
-.secretOutput {
-  border: 1px solid var(--border-color-dark);
-  border-radius: 8px;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  overflow: hidden;
-  transition: background-color 0.3s ease, color 0.3s ease,
-    border-color 0.3s ease;
-}
-
-.secretText {
-  padding: 0.75rem 0.9rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-
-.attachmentList {
-  list-style: none;
-  margin: 0;
-  padding: 0.5rem 0.9rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  font-size: 0.9rem;
-}
-
-.secretText + .attachmentList {
-  border-top: 1px solid var(--border-color);
-}
-
-.attachmentItem {
-  overflow-wrap: anywhere;
-}
-
-.notice {
-  padding: 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background-color: var(--bg-primary);
-  text-align: center;
-  font-size: 1.05rem;
-  overflow-wrap: anywhere;
-}
-
-.notice .statusText {
-  margin-top: 0.25rem;
-  font-size: 0.9rem;
-}
-
-.passwordRow {
-  display: grid;
-  grid-template-columns: max-content minmax(0, 1fr) auto;
-  gap: 0.5rem 0.75rem;
-  align-items: center;
-}
-
-.passwordRow input {
-  width: 100%;
-  min-width: 0;
-}
-
-.footer {
-  display: flex;
-  flex: 1;
-  padding: 1.25rem 0;
-  border-top: 1px solid var(--border-color);
-  justify-content: center;
-  align-items: center;
-  font-size: 0.9rem;
-  transition: border-color 0.3s ease;
-}
-
-.footer a {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-grow: 1;
-}
-
-.footerLink {
-  text-decoration: underline;
-}
-
-.title {
-  margin: 0;
-  line-height: 1.15;
-  font-size: 1.75rem;
-}
-
-.header {
-  margin: 0;
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  padding: 0.6rem var(--column-padding);
-  background-color: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-color);
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.25rem 1rem;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
-}
-
-.subtitle {
-  margin-left: auto;
-  color: var(--text-tertiary);
-  font-size: 0.9rem;
-  transition: color 0.3s ease;
+  flex: row;
+  justify-content: space-around;
 }
 
 .logo {
@@ -501,98 +340,98 @@
 @media (max-width: 600px), (pointer: coarse) {
   .button,
   .chooseFiles,
-  .removeFile,
-  .copyButton,
-  .checkboxLabel {
+  .removeFile {
     min-height: 44px;
-  }
-
-  .copyButton {
-    min-width: 4.5rem;
   }
 
   .removeFile {
     padding: 0 0.5rem;
-    margin-right: -0.5rem;
-  }
-
-  .fileListItem {
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-
-  .checkboxLabel input {
-    width: 1.25rem;
-    height: 1.25rem;
-  }
-
-  .fieldLabel {
-    line-height: 44px;
-  }
-
-  .attachmentList {
-    gap: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-  }
-
-  .attachmentItem {
-    display: flex;
-    align-items: center;
-    min-height: 44px;
   }
 }
 
 @media (max-width: 600px) {
-  .container {
-    --gutter: 0.75rem;
-  }
-
-  .main {
-    padding-top: 1rem;
-  }
-
   .header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.1rem;
   }
 
   .title {
-    font-size: 1.6rem;
+    width: auto;
+    margin: 0.75rem 2.5% 0.25rem;
   }
 
   .subtitle {
-    margin-left: 0;
+    position: static;
+    text-align: left;
+    margin: 0 2.5% 0.6rem;
   }
 
-  /* Too narrow for the date picker beside a label, so the limits get a row. */
-  .expirationLimits {
-    grid-column: 1 / -1;
+  .formRow {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 95%;
+    margin: 0.25rem 0;
+  }
+
+  .formRow input[type='text'],
+  .formRow input[type='password'],
+  .formRow input[type='datetime-local'],
+  .formRow select {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
+  }
+
+  .formRow label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+  }
+
+  .formRow input[type='checkbox'] {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0;
+  }
+
+  .attachFiles {
+    align-items: stretch;
+  }
+
+  .attachRow {
+    justify-content: space-between;
+  }
+
+  .fileListItem {
+    justify-content: space-between;
+  }
+
+  .description {
+    margin: 1.5rem 0.5rem;
+  }
+
+  .sharePair {
+    flex-direction: column;
+  }
+
+  .accessLogTable {
+    margin: 1rem 0;
     font-size: 1rem;
   }
 
-  .expiresAtLabel {
-    flex: 1 1 100%;
+  /* The expiration row is also a .formRow; stack its date and count parts. */
+  .expirationLimits {
+    flex-direction: column;
+    align-items: stretch;
   }
 
-  .expiresAtLabel input {
-    flex: 1 1 auto;
-    min-width: 0;
+  .accessCountLabel {
+    justify-content: center;
   }
 
-  .formSubmit,
-  .primaryAction {
-    grid-column: 1 / -1;
-    justify-self: stretch;
-    align-self: stretch;
-  }
-
-  .passwordRow {
-    grid-template-columns: max-content minmax(0, 1fr);
-  }
-
-  .passwordRow .button {
-    grid-column: 1 / -1;
+  .expirationLimits > span {
+    text-align: center;
   }
 }

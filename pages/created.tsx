@@ -43,21 +43,21 @@ const AccessLog = ({
     }
   }, [expiration]);
   return (
-    <section className={styles.section}>
-      <div className={styles.statusRow}>
-        <p className={styles.statusText}>
-          {accessDocs.length} {accessDocs.length === 1 ? 'access' : 'accesses'};{' '}
-          {expirationText ?? ''}
-        </p>
-        {isExpired ? null : ( // already expired
+    <div className={styles.accessLog}>
+      <p>
+        {accessDocs.length} {accessDocs.length === 1 ? 'access' : 'accesses'};{' '}
+        {expirationText ?? ''}
+      </p>
+      {isExpired ? null : ( // already expired
+        <div>
           <button
             className={styles.button}
             onClick={() => expireNow({ whisperName, creatorKey })}
           >
             Expire Now
           </button>
-        )}
-      </div>
+        </div>
+      )}
       <table className={styles.accessLogTable}>
         <thead>
           <tr>
@@ -82,7 +82,7 @@ const AccessLog = ({
       </table>
       {accessFailureDocs.length ? (
         <>
-          <h2 className={styles.sectionTitle}>Failed access attempts</h2>
+          <p>Failed access attempts</p>
           <table className={styles.accessLogTable}>
             <thead>
               <tr>
@@ -113,7 +113,7 @@ const AccessLog = ({
           </table>
         </>
       ) : null}
-    </section>
+    </div>
   );
 };
 
@@ -148,12 +148,8 @@ const Copiable = ({ text }: { text: string }) => {
   return (
     <div className={styles.copiable}>
       <div className={styles.shareURL}>{text}</div>
-      <button
-        className={styles.copyButton}
-        aria-label="Copy to Clipboard"
-        onClick={copy}
-      >
-        Copy
+      <button className={styles.button} onClick={copy}>
+        Copy to Clipboard
       </button>
     </div>
   );
@@ -176,20 +172,16 @@ const Created: NextPage = () => {
   return (
     <Whisper>
       {name && password && creatorKey ? (
-        <>
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Share this Private URL</h2>
-            <Copiable text={makeURL(name, password)} />
-          </section>
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>
-              Or Share this Public URL and the password
-            </h2>
+        <div className={styles.description}>
+          Share this Private URL
+          <Copiable text={makeURL(name, password)} />
+          Or Share this Public URL and the password
+          <div className={styles.sharePair}>
             <Copiable text={makeURL(name, null)} />
             <Copiable text={password} />
-          </section>
+          </div>
           <AccessLog whisperName={name} creatorKey={creatorKey} />
-        </>
+        </div>
       ) : null}
     </Whisper>
   );

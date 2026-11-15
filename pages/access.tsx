@@ -11,26 +11,22 @@ const PasswordInput = ({ name }: { name: string }) => {
 
   return (
     <>
-      <h1 className={styles.pageTitle}>Someone whispered a secret to you</h1>
-      <div className={styles.passwordRow}>
-        <label className={styles.fieldLabel} htmlFor="access-password">
-          Password
-        </label>
+      <div className={styles.formRow}>
+        Password{' '}
         <input
-          id="access-password"
           type="text"
           value={inputPassword}
           onChange={(e) => setInputPassword(e.target.value)}
         />
-        <button
-          className={styles.button}
-          onClick={() => {
-            router.push(`/display?name=${name}&password=${inputPassword}`);
-          }}
-        >
-          Access Secret
-        </button>
       </div>
+      <button
+        className={styles.button}
+        onClick={() => {
+          router.push(`/display?name=${name}&password=${inputPassword}`);
+        }}
+      >
+        Access Secret
+      </button>
     </>
   );
 };
@@ -45,9 +41,9 @@ const AccessButton = ({
   const router = useRouter();
   return (
     <>
-      <h1 className={styles.pageTitle}>Someone whispered a secret to you</h1>
+      Someone whispered a secret to you
       <button
-        className={`${styles.button} ${styles.primaryAction}`}
+        className={styles.button}
         onClick={() => {
           router.push(`/display?name=${name}&password=${password}`);
         }}
@@ -69,7 +65,7 @@ const AccessPage: NextPage = () => {
   if (!name) {
     return (
       <Whisper>
-        <div className={styles.statusText}>Loading...</div>
+        <div className={styles.description}>Loading...</div>
       </Whisper>
     );
   }
