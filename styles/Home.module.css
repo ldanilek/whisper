@@ -13,7 +13,8 @@
 }
 
 .main {
-  padding: 0.3rem 0;
+  padding: 0.6rem 0 0.75rem;
+  gap: 0.35rem;
   flex: 10;
   display: flex;
   flex-direction: column;
@@ -79,6 +80,7 @@
 }
 
 .button {
+  font-family: inherit;
   font-size: 1rem;
   font-weight: 800;
   cursor: pointer;
@@ -109,7 +111,7 @@
 .accessLogTable {
   border: 1px solid var(--border-color-dark);
   border-radius: 10px;
-  margin: 2rem;
+  margin: 1rem 2rem;
   background-color: var(--bg-primary);
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
@@ -117,6 +119,12 @@
 .accessLogTable td {
   color: var(--text-primary);
   transition: color 0.3s ease;
+}
+
+.accessLogTable thead td {
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
 }
 
 .accessLogEntry {
@@ -132,7 +140,7 @@
 .footer {
   display: flex;
   flex: 1;
-  padding: 2rem 0;
+  padding: 1.25rem 0;
   border-top: 1px solid var(--border-color);
   justify-content: center;
   align-items: center;
@@ -163,11 +171,10 @@
 }
 
 .title {
-  margin: 1rem;
+  margin: 0.75rem 1rem;
   text-align: left;
   line-height: 1.15;
   font-size: 2rem;
-  width: 50%;
 }
 
 .header {
@@ -177,28 +184,28 @@
   background-color: var(--bg-secondary);
   border-bottom: 1px solid var(--border-color);
   display: flex;
-  flex: row;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
   transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .subtitle {
   color: var(--text-tertiary);
   text-align: right;
-  position: absolute;
-  bottom: 0;
-  right: 1em;
+  margin-right: 1rem;
   transition: color 0.3s ease;
 }
 
 .description {
   text-align: center;
-  margin: 2rem 0;
+  margin: 1.25rem 0;
   line-height: 1.5;
   font-size: 1.3rem;
 }
 
 .passwordInput {
-  width: 13rem;
+  width: 15rem;
 }
 
 .formRow {
@@ -223,16 +230,33 @@
   font-size: 0.9rem;
 }
 
-.attachFiles {
-  position: relative;
+/* Two related optional controls side by side; they stack on phones. */
+.extrasRow {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  justify-content: center;
   align-items: center;
-  gap: 0.35rem;
-  width: min(95%, 36rem);
+  gap: 0.4rem 1.25rem;
+  max-width: 100%;
+}
+
+.moreOptions {
+  max-width: 100%;
+  text-align: center;
+}
+
+.moreOptions summary {
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.moreOptions[open] summary {
+  margin-bottom: 0.3rem;
 }
 
 .attachRow {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
@@ -243,6 +267,7 @@
 .chooseFiles {
   font: inherit;
   cursor: pointer;
+  min-height: 2rem;
   padding: 0.15rem 0.55rem;
   border: 1px solid var(--border-color-dark);
   border-radius: 6px;
@@ -266,7 +291,7 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  width: 100%;
+  width: min(95%, 36rem);
 }
 
 .fileListItem {
@@ -280,7 +305,7 @@
 
 .fileName {
   overflow-wrap: anywhere;
-  max-width: 20rem;
+  max-width: 28rem;
   text-align: left;
   font-weight: 700;
 }
@@ -353,6 +378,11 @@
   .header {
     flex-direction: column;
     align-items: flex-start;
+    gap: 0;
+  }
+
+  .main {
+    gap: 0;
   }
 
   .title {
@@ -361,9 +391,37 @@
   }
 
   .subtitle {
-    position: static;
     text-align: left;
+    font-size: 0.85rem;
     margin: 0 2.5% 0.6rem;
+  }
+
+  .extrasRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    width: 95%;
+  }
+
+  .extrasRow > .formRow {
+    width: 100%;
+  }
+
+  .moreOptions {
+    width: 95%;
+    text-align: left;
+  }
+
+  .moreOptions summary {
+    line-height: 44px;
+  }
+
+  .moreOptions[open] summary {
+    margin-bottom: 0;
+  }
+
+  .moreOptions .extrasRow {
+    width: 100%;
   }
 
   .formRow {
@@ -396,10 +454,6 @@
     margin: 0;
   }
 
-  .attachFiles {
-    align-items: stretch;
-  }
-
   .attachRow {
     justify-content: space-between;
   }
@@ -409,7 +463,7 @@
   }
 
   .description {
-    margin: 1.5rem 0.5rem;
+    margin: 1rem 0.5rem;
   }
 
   .sharePair {
@@ -421,17 +475,13 @@
     font-size: 1rem;
   }
 
-  /* The expiration row is also a .formRow; stack its date and count parts. */
+  /* The expiration row is also a .formRow; the date gets its own line. */
   .expirationLimits {
-    flex-direction: column;
-    align-items: stretch;
+    justify-content: flex-start;
+    gap: 0 0.5rem;
   }
 
-  .accessCountLabel {
-    justify-content: center;
-  }
-
-  .expirationLimits > span {
-    text-align: center;
+  .expiresAtLabel {
+    flex: 1 1 100%;
   }
 }

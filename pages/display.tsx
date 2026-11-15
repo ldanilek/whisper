@@ -108,13 +108,19 @@ const SecretDisplay = ({
       password={password}
     />
   ));
+  // Each attachment line was appended after a newline, so removing the lines
+  // leaves one trailing newline per attachment.
+  const secretText = parsed.secret.replace(
+    new RegExp(`\\n{0,${attachments.length}}$`),
+    ''
+  );
   return (
     <>
       <div
         className={styles.description}
       >{`${senderDisplay} whispered this secret to you`}</div>
       <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
-        {parsed.secret}
+        {secretText}
         {attachments}
       </div>
     </>
