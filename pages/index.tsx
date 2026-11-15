@@ -127,25 +127,28 @@ const Home: NextPage = () => {
 
   return (
     <Whisper>
-      <textarea
-        className={styles.secretDisplay}
-        placeholder="secret"
-        value={secret}
-        onChange={(e) => setSecret(e.target.value)}
-      />
-      <div className={styles.formRow}>
-        sender{' '}
+      <div className={styles.form}>
+        <textarea
+          className={styles.secretDisplay}
+          placeholder="secret"
+          aria-label="secret"
+          value={secret}
+          onChange={(e) => setSecret(e.target.value)}
+        />
+        <label className={styles.fieldLabel} htmlFor="sender">
+          sender
+        </label>
         <input
+          id="sender"
           type="text"
-          className={styles.passwordInput}
           placeholder="your name (optional)"
           value={sender}
           onChange={(e) => setSender(e.target.value)}
         />
-      </div>
-      <div className={styles.attachFiles}>
-        <div className={styles.attachRow}>
-          <span id="attach-files-label">attach secret files</span>
+        <span className={styles.fieldLabel} id="attach-files-label">
+          files
+        </span>
+        <div className={styles.fileControl}>
           <button
             type="button"
             className={styles.chooseFiles}
@@ -162,31 +165,30 @@ const Home: NextPage = () => {
             aria-labelledby="attach-files-label"
             onChange={(event) => addFiles(event.target.files)}
           />
-        </div>
-        {selectedFiles.length > 0 ? (
-          <ul className={styles.fileList} aria-label="Selected files">
-            {selectedFiles.map((file, index) => (
-              <li
-                className={styles.fileListItem}
-                key={`${file.name}-${file.size}-${file.lastModified}-${index}`}
-              >
-                <span className={styles.fileName}>{file.name}</span>
-                <button
-                  type="button"
-                  className={styles.removeFile}
-                  aria-label={`Remove ${file.name}`}
-                  onClick={() => removeFile(index)}
+          {selectedFiles.length > 0 ? (
+            <ul className={styles.fileList} aria-label="Selected files">
+              {selectedFiles.map((file, index) => (
+                <li
+                  className={styles.fileListItem}
+                  key={`${file.name}-${file.size}-${file.lastModified}-${index}`}
                 >
-                  remove
-                </button>
-              </li>
-            ))}
-          </ul>
-        ) : null}
-      </div>
-      {createError ? <div>{createError}</div> : null}
-      <div className={styles.formRow}>
-        <label htmlFor="expiration">expires&nbsp;</label>
+                  <span className={styles.fileName}>{file.name}</span>
+                  <button
+                    type="button"
+                    className={styles.removeFile}
+                    aria-label={`Remove ${file.name}`}
+                    onClick={() => removeFile(index)}
+                  >
+                    remove
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+        <label className={styles.fieldLabel} htmlFor="expiration">
+          expires
+        </label>
         <select
           id="expiration"
           value={expiration}
@@ -198,68 +200,75 @@ const Home: NextPage = () => {
             </option>
           ))}
         </select>
-      </div>
-      {usesExpiresAt || usesMaxAccesses ? (
-        <div className={`${styles.formRow} ${styles.expirationLimits}`}>
-          {usesExpiresAt ? (
-            <label>
-              at{' '}
-              <input
-                type="datetime-local"
-                value={expiresAtInput}
-                min={toDateTimeLocal(new Date().getTime())}
-                required
-                onChange={(e) => setExpiresAtInput(e.target.value)}
-              />
-            </label>
-          ) : null}
-          {usesExpiresAt && usesMaxAccesses ? <span>or</span> : null}
-          {usesMaxAccesses ? (
-            <label className={styles.accessCountLabel}>
-              after{' '}
-              <input
-                type="number"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                className={styles.accessCountInput}
-                min={1}
-                max={maxCustomAccesses}
-                step={1}
-                value={maxAccessesInput}
-                required
-                onChange={(e) => setMaxAccessesInput(e.target.value)}
-              />{' '}
-              {maxAccessesInput === '1' ? 'access' : 'accesses'}
-            </label>
-          ) : null}
-          {usesExpiresAt && usesMaxAccesses ? (
-            <span className={styles.expirationHint}>whichever is first</span>
-          ) : null}
-        </div>
-      ) : null}
-      <div className={styles.formRow}>
-        password{' '}
+        {usesExpiresAt || usesMaxAccesses ? (
+          <div className={styles.expirationLimits}>
+            {usesExpiresAt ? (
+              <label className={styles.expiresAtLabel}>
+                at
+                <input
+                  type="datetime-local"
+                  value={expiresAtInput}
+                  min={toDateTimeLocal(new Date().getTime())}
+                  required
+                  onChange={(e) => setExpiresAtInput(e.target.value)}
+                />
+              </label>
+            ) : null}
+            {usesExpiresAt && usesMaxAccesses ? <span>or</span> : null}
+            {usesMaxAccesses ? (
+              <label className={styles.accessCountLabel}>
+                after
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  className={styles.accessCountInput}
+                  min={1}
+                  max={maxCustomAccesses}
+                  step={1}
+                  value={maxAccessesInput}
+                  required
+                  onChange={(e) => setMaxAccessesInput(e.target.value)}
+                />
+                {maxAccessesInput === '1' ? 'access' : 'accesses'}
+              </label>
+            ) : null}
+            {usesExpiresAt && usesMaxAccesses ? (
+              <span className={styles.expirationHint}>whichever is first</span>
+            ) : null}
+          </div>
+        ) : null}
+        <label className={styles.fieldLabel} htmlFor="password">
+          password
+        </label>
         <input
+          id="password"
           placeholder="leave blank to generate random"
           type="text"
-          className={styles.passwordInput}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
-      </div>
-      <div className={styles.formRow}>
-        <label>
-          request geolocation{' '}
+        <label className={`${styles.formSpan} ${styles.checkboxLabel}`}>
           <input
             type="checkbox"
             checked={requestGeolocation}
             onChange={(e) => setRequestGeolocation(e.target.checked)}
           />
+          request geolocation
         </label>
+        {createError ? (
+          <div className={`${styles.formSpan} ${styles.formError}`}>
+            {createError}
+          </div>
+        ) : null}
+        <button
+          className={`${styles.button} ${styles.formSubmit}`}
+          onClick={create}
+          disabled={creating}
+        >
+          {creating ? 'Creating Whisper...' : 'Create Whisper'}
+        </button>
       </div>
-      <button className={styles.button} onClick={create} disabled={creating}>
-        {creating ? 'Creating Whisper...' : 'Create Whisper'}
-      </button>
     </Whisper>
   );
 };

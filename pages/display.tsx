@@ -39,28 +39,25 @@ const Attachment = ({
   }, [url, filename]);
   if (url === null) {
     return (
-      <span>
-        <br />
+      <li className={styles.attachmentItem}>
         {`missing attachment '${filename}'`}
-      </span>
+      </li>
     );
   }
   if (fileBlob === null) {
     return (
-      <span>
-        <br />
+      <li className={styles.attachmentItem}>
         {`Loading attachment ${filename}`}
-      </span>
+      </li>
     );
   }
   const blobURL = window.URL.createObjectURL(fileBlob);
   return (
-    <span>
-      <br />
+    <li className={styles.attachmentItem}>
       <a className={styles.secretAttachment} href={blobURL} download={filename}>
         {filename}
       </a>
-    </span>
+    </li>
   );
 };
 
@@ -83,8 +80,10 @@ const SecretDisplay = ({
   ) ?? { encryptedSecret: undefined, encryptedSender: null, storageURLs: {} };
   if (!encryptedSecret) {
     return (
-      <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
-        {'Loading...'}
+      <div className={styles.secretOutput}>
+        <div className={`${styles.secretText} ${styles.statusText}`}>
+          {'Loading...'}
+        </div>
       </div>
     );
   }
@@ -108,14 +107,26 @@ const SecretDisplay = ({
       password={password}
     />
   ));
+  // Each attachment line was appended after a newline, so removing the lines
+  // leaves one trailing newline per attachment.
+  const secretText = parsed.secret.replace(
+    new RegExp(`\\n{0,${attachments.length}}$`),
+    ''
+  );
   return (
     <>
-      <div
-        className={styles.description}
-      >{`${senderDisplay} whispered this secret to you`}</div>
-      <div className={styles.secretDisplay + ' ' + styles.secretOutput}>
-        {parsed.secret}
-        {attachments}
+      <h1
+        className={styles.pageTitle}
+      >{`${senderDisplay} whispered this secret to you`}</h1>
+      <div className={styles.secretOutput}>
+        {secretText || attachments.length === 0 ? (
+          <div className={styles.secretText}>{secretText}</div>
+        ) : null}
+        {attachments.length > 0 ? (
+          <ul className={styles.attachmentList} aria-label="Attachments">
+            {attachments}
+          </ul>
+        ) : null}
       </div>
     </>
   );
@@ -169,7 +180,7 @@ const ExpirationDisplay = ({
     }
   }, [expiration]);
   return (
-    <div className={styles.description}>
+    <div className={expirationText ? styles.notice : styles.statusText}>
       {expirationText ? expirationText : 'Loading...'}
     </div>
   );
@@ -201,8 +212,10 @@ class ExpirationWrapper extends React.Component<
       // Avoid loops in case ExpirationDisplay is throwing "invalid password" errors.
       return (
         <Whisper>
-          <div>{this.state.caughtError}</div>
-          <div>Try again.</div>
+          <div className={styles.notice}>
+            <div>{this.state.caughtError}</div>
+            <div className={styles.statusText}>Try again.</div>
+          </div>
         </Whisper>
       );
     }
@@ -294,7 +307,7 @@ const DisplayPage: NextPage<DisplayPageProps> = ({
   if (!(name && accessKey && password)) {
     return (
       <Whisper>
-        <div className={styles.description}>Loading...</div>
+        <div className={styles.statusText}>Loading...</div>
       </Whisper>
     );
   }

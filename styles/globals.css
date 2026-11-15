@@ -56,10 +56,25 @@ select {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   border: 1px solid var(--border-color-dark);
-  border-radius: 4px;
-  padding: 0.5rem;
+  border-radius: 6px;
+  padding: 0.35rem 0.5rem;
   transition: background-color 0.3s ease, color 0.3s ease,
     border-color 0.3s ease;
+}
+
+input[type='text'],
+input[type='password'],
+input[type='number'],
+input[type='datetime-local'],
+select {
+  font-family: inherit;
+  font-size: 0.9rem;
+  min-height: 2.25rem;
+}
+
+textarea {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.9rem;
 }
 
 input[type='text']:focus,
